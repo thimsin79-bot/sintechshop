@@ -39,90 +39,19 @@ export function LoginPage() {
 
   if (!ready || user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-950">
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg shadow-brand-500/30">
-            <i className="fas fa-laptop text-xl" />
-          </div>
-          <i
-            className="fas fa-circle-notch fa-spin text-brand-400"
-            aria-label="Loading"
-          />
-        </div>
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <i
+          className="fas fa-circle-notch fa-spin text-2xl text-brand-500"
+          aria-label="Loading"
+        />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-slate-50">
-      <aside className="relative hidden w-1/2 flex-col justify-between overflow-hidden bg-gradient-to-br from-brand-700 via-brand-600 to-brand-900 p-12 text-white lg:flex">
-        <div className="absolute -right-24 -top-24 h-72 w-72 rounded-full bg-white/10" />
-        <div className="absolute -bottom-32 -left-16 h-80 w-80 rounded-full bg-white/5" />
-        <div className="absolute right-16 top-1/3 h-32 w-32 rounded-3xl border border-white/10 bg-white/5" />
-
-        <div className="relative">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15 shadow-lg backdrop-blur">
-              <i className="fas fa-laptop text-lg" />
-            </div>
-            <div>
-              <p className="text-lg font-bold leading-tight">TechVault</p>
-              <p className="text-xs text-brand-100">Inventory System</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="relative max-w-md">
-          <p className="mb-3 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-medium text-brand-50">
-            <i className="fas fa-shield-halved" /> Secure shop management
-          </p>
-          <h1 className="text-4xl font-bold leading-tight">
-            Run your computer shop from one place.
-          </h1>
-          <p className="mt-4 text-sm leading-relaxed text-brand-100">
-            Track inventory, process sales, manage warranties and keep every
-            customer record organized.
-          </p>
-
-          <ul className="mt-8 space-y-3 text-sm text-brand-50">
-            <li className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-                <i className="fas fa-boxes-stacked" />
-              </span>
-              Inventory and stock movement tracking
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-                <i className="fas fa-receipt" />
-              </span>
-              Sales invoices, customers and warranties
-            </li>
-            <li className="flex items-center gap-3">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-white/10">
-                <i className="fas fa-chart-line" />
-              </span>
-              Reports that keep you ahead of low stock
-            </li>
-          </ul>
-        </div>
-
-        <p className="relative text-xs text-brand-200">
-          © {new Date().getFullYear()} TechVault. All rights reserved.
-        </p>
-      </aside>
-
-      <main className="flex flex-1 items-center justify-center px-6 py-12">
+    <div className="min-h-screen bg-white">
+      <main className="flex min-h-screen items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <div className="mb-8 flex items-center gap-3 lg:hidden">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-white shadow-lg shadow-brand-500/30">
-              <i className="fas fa-laptop" />
-            </div>
-            <div>
-              <p className="font-bold leading-tight text-slate-900">TechVault</p>
-              <p className="text-xs text-slate-500">Inventory System</p>
-            </div>
-          </div>
-
           <div className="fade-in">
             <h2 className="text-2xl font-bold text-slate-900">Welcome back</h2>
             <p className="mt-2 text-sm text-slate-500">
@@ -130,11 +59,7 @@ export function LoginPage() {
             </p>
           </div>
 
-          <form
-            onSubmit={handleSubmit}
-            noValidate
-            className="mt-8 space-y-5"
-          >
+          <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
             <div>
               <label htmlFor="login-email" className={labelClass}>
                 Email address
