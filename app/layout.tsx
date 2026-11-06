@@ -19,7 +19,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} bg-black text-slate-800 antialiased`}>
+      <body className={`${inter.className} bg-slate-50 text-slate-800 antialiased`}>
         <DataProvider>
           <ToastProvider>
             <AuthProvider>
