@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TechVault • Computer Shop Inventory</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              200: '#bfdbfe',
+              300: '#93c5fd',
+              400: '#60a5fa',
+              500: '#3b82f6',
+              600: '#2563eb',
+              700: '#1d4ed8',
+              800: '#1e40af',
+              900: '#e5e8f1',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .sidebar-link.active { background: linear-gradient(90deg, #2563eb 0%, #1d4ed8 100%); color: white; }
+    .sidebar-link:hover:not(.active) { background: #f1f5f9; }
+    .card-hover { transition: all 0.2s ease; }
+    .card-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgb(0 0 0 / 0.1); }
+    .fade-in { animation: fadeIn 0.25s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .table-row:hover { background: #f8fafc; }
+    .badge { font-size: 0.7rem; padding: 0.15rem 0.5rem; border-radius: 9999px; font-weight: 600; }
+    .modal-backdrop { background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(4px); }
+  </style>
+</head>
+<body class="bg-black text-slate-800 antialiased">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="w-64 bg-white border-r border-slate-200 flex flex-col shadow-sm z-20">
+      <div class="p-5 border-b border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+            <i class="fas fa-laptop text-lg"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-lg leading-tight text-slate-900">TechVault</h1>
+            <p class="text-xs text-slate-500">Inventory System</p>
+          </div>
+        </div>
+      </div>
+
+      <nav class="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+        <p class="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Main</p>
+        <a href="#" data-page="dashboard" class="sidebar-link active flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors">
+          <i class="fas fa-chart-pie w-5 text-center"></i> Dashboard
+        </a>
+        <a href="#" data-page="products" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-box w-5 text-center"></i> Products
+        </a>
+        <a href="#" data-page="categories" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-tags w-5 text-center"></i> Categories
+        </a>
+        <a href="#" data-page="inventory" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-warehouse w-5 text-center"></i> Stock In / Out
+        </a>
+
+        <p class="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-5 mb-2">Procurement</p>
+        <a href="#" data-page="suppliers" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-truck w-5 text-center"></i> Suppliers
+        </a>
+        <a href="#" data-page="purchasing" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-shopping-cart w-5 text-center"></i> Purchasing
+        </a>
+
+        <p class="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-5 mb-2">Sales</p>
+        <a href="#" data-page="sales" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-receipt w-5 text-center"></i> Sales
+        </a>
+        <a href="#" data-page="customers" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-users w-5 text-center"></i> Customers
+        </a>
+        <a href="#" data-page="warranty" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-shield-alt w-5 text-center"></i> Warranty
+        </a>
+
+        <p class="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-5 mb-2">System</p>
+        <a href="#" data-page="reports" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-chart-bar w-5 text-center"></i> Reports
+        </a>
+        <a href="#" data-page="users" class="sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-slate-600 transition-colors">
+          <i class="fas fa-user-cog w-5 text-center"></i> User Management
+        </a>
+      </nav>
+
+      <div class="p-4 border-t border-slate-100">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-semibold text-sm">AD</div>
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">Admin User</p>
+            <p class="text-xs text-slate-500 truncate">admin@techvault.com</p>
+          </div>
+          <button class="text-slate-400 hover:text-slate-600" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col overflow-hidden">
+      <!-- Top Bar -->
+      <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-10">
+        <div class="flex items-center gap-4">
+          <button id="menuToggle" class="lg:hidden text-slate-500 hover:text-slate-700">
+            <i class="fas fa-bars text-lg"></i>
+          </button>
+          <div>
+            <h2 id="pageTitle" class="text-lg font-semibold text-slate-900">Dashboard</h2>
+            <p id="pageSubtitle" class="text-xs text-slate-500">Overview of your computer shop</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3">
+          <div class="relative hidden md:block">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+            <input type="text" placeholder="Search products, SKUs..." class="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent w-64 bg-slate-50" />
+          </div>
+          <button class="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg">
+            <i class="fas fa-bell"></i>
+            <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+          <button class="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg">
+            <i class="fas fa-cog"></i>
+          </button>
+        </div>
+      </header>
+
+      <!-- Page Content -->
+      <main id="content" class="flex-1 overflow-y-auto p-6">
+        <!-- Pages will be injected here -->
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal Container -->
+  <div id="modalRoot" class="fixed inset-0 z-50 hidden items-center justify-center modal-backdrop">
+    <div id="modalContent" class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[90vh] overflow-y-auto"></div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden">
+    <div class="bg-slate-900 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 text-sm">
+      <i class="fas fa-check-circle text-emerald-400"></i>
+      <span id="toastMsg">Action completed</span>
+    </div>
+  </div>
+
+  <script>
+    // ==================== SAMPLE DATA ====================
+    const data = {
+      products: [
+        { id: 1, sku: 'CPU-AMD-7950X', name: 'AMD Ryzen 9 7950X', category: 'Processors', brand: 'AMD', price: 549, cost: 420, stock: 12, minStock: 5, warranty: 36, status: 'active' },
+        { id: 2, sku: 'GPU-NV-4090', name: 'NVIDIA RTX 4090 24GB', category: 'Graphics Cards', brand: 'NVIDIA', price: 1599, cost: 1320, stock: 4, minStock: 3, warranty: 36, status: 'active' },
+        { id: 3, sku: 'MB-ASUS-X670E', name: 'ASUS ROG Strix X670E-E', category: 'Motherboards', brand: 'ASUS', price: 499, cost: 380, stock: 8, minStock: 4, warranty: 36, status: 'active' },
+        { id: 4, sku: 'RAM-COR-32GB', name: 'Corsair Vengeance 32GB DDR5', category: 'Memory', brand: 'Corsair', price: 129, cost: 95, stock: 25, minStock: 10, warranty: 60, status: 'active' },
+        { id: 5, sku: 'SSD-SAM-2TB', name: 'Samsung 990 PRO 2TB NVMe', category: 'Storage', brand: 'Samsung', price: 189, cost: 145, stock: 18, minStock: 8, warranty: 60, status: 'active' },
+        { id: 6, sku: 'PSU-SEA-1000W', name: 'Seasonic Focus GX-1000W', category: 'Power Supplies', brand: 'Seasonic', price: 189, cost: 140, stock: 9, minStock: 5, warranty: 120, status: 'active' },
+        { id: 7, sku: 'CASE-LIAN-O11', name: 'Lian Li O11 Dynamic EVO', category: 'Cases', brand: 'Lian Li', price: 169, cost: 125, stock: 6, minStock: 3, warranty: 12, status: 'active' },
+        { id: 8, sku: 'CPU-INT-14900K', name: 'Intel Core i9-14900K', category: 'Processors', brand: 'Intel', price: 589, cost: 450, stock: 2, minStock: 4, warranty: 36, status: 'low' },
+        { id: 9, sku: 'MON-LG-27GP', name: 'LG 27GP850-B 27" 165Hz', category: 'Monitors', brand: 'LG', price: 349, cost: 270, stock: 11, minStock: 5, warranty: 36, status: 'active' },
+        { id: 10, sku: 'KB-LOG-G915', name: 'Logitech G915 TKL', category: 'Peripherals', brand: 'Logitech', price: 199, cost: 145, stock: 14, minStock: 6, warranty: 24, status: 'active' },
+      ],
+      categories: [
+        { id: 1, name: 'Processors', products: 2, description: 'CPUs from AMD & Intel' },
+        { id: 2, name: 'Graphics Cards', products: 1, description: 'NVIDIA & AMD GPUs' },
+        { id: 3, name: 'Motherboards', products: 1, description: 'AMD & Intel platforms' },
+        { id: 4, name: 'Memory', products: 1, description: 'DDR4 / DDR5 RAM kits' },
+        { id: 5, name: 'Storage', products: 1, description: 'SSDs & HDDs' },
+        { id: 6, name: 'Power Supplies', products: 1, description: 'Modular & non-modular PSUs' },
+        { id: 7, name: 'Cases', products: 1, description: 'ATX, mATX, ITX cases' },
+        { id: 8, name: 'Monitors', products: 1, description: 'Gaming & productivity displays' },
+        { id: 9, name: 'Peripherals', products: 1, description: 'Keyboards, mice, headsets' },
+      ],
+      suppliers: [
+        { id: 1, name: 'TechDistributors Inc.', contact: 'John Rivera', email: 'john@techdist.com', phone: '+1 555-0101', city: 'Los Angeles', products: 42, status: 'active' },
+        { id: 2, name: 'AsiaPC Wholesale', contact: 'Mei Chen', email: 'mei@asiapc.com', phone: '+86 21 5555 0202', city: 'Shanghai', products: 28, status: 'active' },
+        { id: 3, name: 'EuroComponents GmbH', contact: 'Hans Müller', email: 'hans@eurocomp.de', phone: '+49 89 555 0303', city: 'Munich', products: 15, status: 'active' },
+        { id: 4, name: 'Silicon Valley Parts', contact: 'Sarah Kim', email: 'sarah@svparts.com', phone: '+1 408-555-0404', city: 'San Jose', products: 33, status: 'inactive' },
+      ],
+      purchases: [
+        { id: 'PO-2024-089', supplier: 'TechDistributors Inc.', date: '2024-10-28', items: 8, total: 12450, status: 'received' },
+        { id: 'PO-2024-090', supplier: 'AsiaPC Wholesale', date: '2024-10-30', items: 12, total: 18900, status: 'partial' },
+        { id: 'PO-2024-091', supplier: 'EuroComponents GmbH', date: '2024-11-01', items: 5, total: 6720, status: 'ordered' },
+        { id: 'PO-2024-092', supplier: 'TechDistributors Inc.', date: '2024-11-03', items: 15, total: 22100, status: 'ordered' },
+      ],
+      sales: [
+        { id: 'INV-8842', customer: 'Alex Thompson', date: '2024-11-04', items: 3, total: 2347, status: 'completed', payment: 'card' },
+        { id: 'INV-8841', customer: 'Maria Garcia', date: '2024-11-04', items: 1, total: 1599, status: 'completed', payment: 'cash' },
+        { id: 'INV-8840', customer: 'BuildMyPC LLC', date: '2024-11-03', items: 12, total: 8940, status: 'completed', payment: 'transfer' },
+        { id: 'INV-8839', customer: 'James Wilson', date: '2024-11-03', items: 2, total: 678, status: 'refunded', payment: 'card' },
+        { id: 'INV-8838', customer: 'Sophie Chen', date: '2024-11-02', items: 4, total: 1120, status: 'completed', payment: 'card' },
+        { id: 'INV-8837', customer: 'David Park', date: '2024-11-02', items: 1, total: 549, status: 'completed', payment: 'cash' },
+      ],
+      customers: [
+        { id: 1, name: 'Alex Thompson', email: 'alex.t@email.com', phone: '+1 555-1001', orders: 7, spent: 8450, type: 'retail' },
+        { id: 2, name: 'Maria Garcia', email: 'maria.g@email.com', phone: '+1 555-1002', orders: 3, spent: 2890, type: 'retail' },
+        { id: 3, name: 'BuildMyPC LLC', email: 'orders@buildmypc.com', phone: '+1 555-2001', orders: 24, spent: 67200, type: 'wholesale' },
+        { id: 4, name: 'James Wilson', email: 'jwilson@email.com', phone: '+1 555-1003', orders: 2, spent: 1120, type: 'retail' },
+        { id: 5, name: 'Sophie Chen', email: 'sophie.c@email.com', phone: '+1 555-1004', orders: 5, spent: 4560, type: 'retail' },
+        { id: 6, name: 'David Park', email: 'dpark@email.com', phone: '+1 555-1005', orders: 1, spent: 549, type: 'retail' },
+      ],
+      warranties: [
+        { id: 'WR-1001', product: 'NVIDIA RTX 4090 24GB', serial: 'NV-4090-A8F29C', customer: 'Maria Garcia', purchaseDate: '2024-11-04', expiry: '2027-11-04', status: 'active' },
+        { id: 'WR-1002', product: 'AMD Ryzen 9 7950X', serial: 'AMD-7950-B3K11D', customer: 'Alex Thompson', purchaseDate: '2024-11-04', expiry: '2027-11-04', status: 'active' },
+        { id: 'WR-1003', product: 'Samsung 990 PRO 2TB', serial: 'SAM-990-C7M44E', customer: 'Sophie Chen', purchaseDate: '2024-10-15', expiry: '2029-10-15', status: 'active' },
+        { id: 'WR-1004', product: 'Intel Core i9-14900K', serial: 'INT-14900-D2N88F', customer: 'James Wilson', purchaseDate: '2024-09-20', expiry: '2027-09-20', status: 'claimed' },
+        { id: 'WR-1005', product: 'Corsair Vengeance 32GB', serial: 'COR-32-E9P22G', customer: 'BuildMyPC LLC', purchaseDate: '2024-08-10', expiry: '2029-08-10', status: 'active' },
+      ],
+      stockMovements: [
+        { id: 1, type: 'in', product: 'AMD Ryzen 9 7950X', qty: 10, ref: 'PO-2024-089', date: '2024-10-28', user: 'Admin' },
+        { id: 2, type: 'out', product: 'NVIDIA RTX 4090 24GB', qty: 1, ref: 'INV-8841', date: '2024-11-04', user: 'Sales1' },
+        { id: 3, type: 'in', product: 'Samsung 990 PRO 2TB', qty: 15, ref: 'PO-2024-090', date: '2024-10-30', user: 'Admin' },
+        { id: 4, type: 'out', product: 'AMD Ryzen 9 7950X', qty: 1, ref: 'INV-8842', date: '2024-11-04', user: 'Sales1' },
+        { id: 5, type: 'out', product: 'Corsair Vengeance 32GB', qty: 2, ref: 'INV-8842', date: '2024-11-04', user: 'Sales1' },
+        { id: 6, type: 'in', product: 'Lian Li O11 Dynamic EVO', qty: 5, ref: 'PO-2024-091', date: '2024-11-01', user: 'Admin' },
+      ],
+      users: [
+        { id: 1, name: 'Admin User', email: 'admin@techvault.com', role: 'Administrator', lastLogin: '2024-11-05 08:12', status: 'active' },
+        { id: 2, name: 'Sarah Sales', email: 'sarah@techvault.com', role: 'Sales Staff', lastLogin: '2024-11-05 07:45', status: 'active' },
+        { id: 3, name: 'Mike Inventory', email: 'mike@techvault.com', role: 'Inventory Manager', lastLogin: '2024-11-04 16:30', status: 'active' },
+        { id: 4, name: 'Lisa Accounts', email: 'lisa@techvault.com', role: 'Accountant', lastLogin: '2024-11-03 11:20', status: 'inactive' },
+      ]
+    };
+
+    // ==================== UTILITIES ====================
+    function formatCurrency(n) {
+      return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(n);
+    }
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    }
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      document.getElementById('toastMsg').textContent = msg;
+      t.classList.remove('hidden');
+      setTimeout(() => t.classList.add('hidden'), 2800);
+    }
+    function openModal(html) {
+      const root = document.getElementById('modalRoot');
+      document.getElementById('modalContent').innerHTML = html;
+      root.classList.remove('hidden');
+      root.classList.add('flex');
+    }
+    function closeModal() {
+      const root = document.getElementById('modalRoot');
+      root.classList.add('hidden');
+      root.classList.remove('flex');
+    }
+    document.getElementById('modalRoot').addEventListener('click', e => {
+      if (e.target.id === 'modalRoot') closeModal();
+    });
+
+    // ==================== PAGE RENDERERS ====================
+    const pages = {
+      dashboard() {
+        const totalProducts = data.products.length;
+        const lowStock = data.products.filter(p => p.stock <= p.minStock).length;
+        const totalSales = data.sales.filter(s => s.status === 'completed').reduce((s, i) => s + i.total, 0);
+        const totalStockValue = data.products.reduce((s, p) => s + p.stock * p.cost, 0);
+
+        return `
+          <div class="fade-in space-y-6">
+            <!-- Dashboard Search Bar -->
+            <div class="relative">
+              <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-1.5 flex items-center gap-2 focus-within:ring-2 focus-within:ring-brand-500 focus-within:border-brand-500 transition">
+                <div class="pl-3 text-slate-400">
+                  <i class="fas fa-search"></i>
+                </div>
+                <input
+                  type="text"
+                  id="dashboardSearch"
+                  placeholder="Search products, SKUs, customers, invoices, warranties..."
+                  class="flex-1 py-2.5 px-2 text-sm bg-transparent focus:outline-none placeholder:text-slate-400"
+                  oninput="handleDashboardSearch(this.value)"
+                  onfocus="handleDashboardSearch(this.value)"
+                  autocomplete="off"
+                />
+                <kbd class="hidden sm:inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium text-slate-400 bg-slate-100 rounded border border-slate-200 mr-1">⌘K</kbd>
+              </div>
+              <!-- Live results dropdown -->
+              <div id="dashboardSearchResults" class="hidden absolute z-30 top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-slate-200 shadow-xl overflow-hidden max-h-80 overflow-y-auto">
+              </div>
+            </div>
+
+            <!-- KPI Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm card-hover">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-500 font-medium">Total Products</p>
+                    <p class="text-2xl font-bold mt-1">${totalProducts}</p>
+                    <p class="text-xs text-emerald-600 mt-1"><i class="fas fa-arrow-up"></i> 4 new this month</p>
+                  </div>
+                  <div class="w-12 h-12 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-box"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm card-hover">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-500 font-medium">Low Stock Alerts</p>
+                    <p class="text-2xl font-bold mt-1 text-amber-600">${lowStock}</p>
+                    <p class="text-xs text-slate-500 mt-1">Needs restocking</p>
+                  </div>
+                  <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-exclamation-triangle"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm card-hover">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-500 font-medium">Sales (This Week)</p>
+                    <p class="text-2xl font-bold mt-1">${formatCurrency(totalSales)}</p>
+                    <p class="text-xs text-emerald-600 mt-1"><i class="fas fa-arrow-up"></i> 12% vs last week</p>
+                  </div>
+                  <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-dollar-sign"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm card-hover">
+                <div class="flex items-center justify-between">
+                  <div>
+                    <p class="text-sm text-slate-500 font-medium">Inventory Value</p>
+                    <p class="text-2xl font-bold mt-1">${formatCurrency(totalStockValue)}</p>
+                    <p class="text-xs text-slate-500 mt-1">At cost price</p>
+                  </div>
+                  <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center text-xl">
+                    <i class="fas fa-warehouse"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+              <!-- Sales Chart -->
+              <div class="xl:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-semibold text-slate-800">Sales Overview</h3>
+                  <select class="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                  </select>
+                </div>
+                <canvas id="salesChart" height="120"></canvas>
+              </div>
+
+              <!-- Low Stock -->
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-semibold text-slate-800 mb-4">Low Stock Items</h3>
+                <div class="space-y-3">
+                  ${data.products.filter(p => p.stock <= p.minStock).map(p => `
+                    <div class="flex items-center justify-between p-3 bg-amber-50 rounded-xl border border-amber-100">
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium truncate">${p.name}</p>
+                        <p class="text-xs text-slate-500">${p.sku}</p>
+                      </div>
+                      <span class="badge bg-amber-200 text-amber-800">${p.stock} left</span>
+                    </div>
+                  `).join('') || '<p class="text-sm text-slate-500">All stocks healthy</p>'}
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-semibold text-slate-800 mb-4">Recent Sales</h3>
+                <div class="overflow-x-auto">
+                  <table class="w-full text-sm">
+                    <thead>
+                      <tr class="text-left text-slate-500 border-b border-slate-100">
+                        <th class="pb-3 font-medium">Invoice</th>
+                        <th class="pb-3 font-medium">Customer</th>
+                        <th class="pb-3 font-medium">Total</th>
+                        <th class="pb-3 font-medium">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${data.sales.slice(0, 5).map(s => `
+                        <tr class="table-row border-b border-slate-50">
+                          <td class="py-3 font-medium text-brand-600">${s.id}</td>
+                          <td class="py-3">${s.customer}</td>
+                          <td class="py-3">${formatCurrency(s.total)}</td>
+                          <td class="py-3"><span class="badge ${s.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${s.status}</span></td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-semibold text-slate-800 mb-4">Recent Stock Movements</h3>
+                <div class="space-y-3">
+                  ${data.stockMovements.slice(0, 5).map(m => `
+                    <div class="flex items-center gap-3 p-3 rounded-xl bg-slate-50">
+                      <div class="w-9 h-9 rounded-lg flex items-center justify-center ${m.type === 'in' ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'}">
+                        <i class="fas fa-arrow-${m.type === 'in' ? 'down' : 'up'}"></i>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">${m.product}</p>
+                        <p class="text-xs text-slate-500">${m.ref} • ${formatDate(m.date)}</p>
+                      </div>
+                      <span class="text-sm font-semibold ${m.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}">${m.type === 'in' ? '+' : '-'}${m.qty}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      products() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="relative">
+                  <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <input type="text" id="productSearch" placeholder="Search products..." class="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 w-64 bg-white" oninput="filterProducts()" />
+                </div>
+                <select id="catFilter" class="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white" onchange="filterProducts()">
+                  <option value="">All Categories</option>
+                  ${data.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('')}
+                </select>
+              </div>
+              <button onclick="showAddProductModal()" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm shadow-brand-500/30 transition">
+                <i class="fas fa-plus"></i> Add Product
+              </button>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm" id="productsTable">
+                  <thead class="bg-slate-50 text-slate-500">
+                    <tr class="text-left">
+                      <th class="px-5 py-3.5 font-medium">SKU / Product</th>
+                      <th class="px-5 py-3.5 font-medium">Category</th>
+                      <th class="px-5 py-3.5 font-medium">Stock</th>
+                      <th class="px-5 py-3.5 font-medium">Cost</th>
+                      <th class="px-5 py-3.5 font-medium">Price</th>
+                      <th class="px-5 py-3.5 font-medium">Warranty</th>
+                      <th class="px-5 py-3.5 font-medium">Status</th>
+                      <th class="px-5 py-3.5 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.products.map(p => `
+                      <tr class="table-row border-t border-slate-50 product-row" data-name="${p.name.toLowerCase()}" data-cat="${p.category}">
+                        <td class="px-5 py-3.5">
+                          <div class="font-medium text-slate-900">${p.name}</div>
+                          <div class="text-xs text-slate-500">${p.sku}</div>
+                        </td>
+                        <td class="px-5 py-3.5"><span class="badge bg-slate-100 text-slate-600">${p.category}</span></td>
+                        <td class="px-5 py-3.5">
+                          <span class="font-semibold ${p.stock <= p.minStock ? 'text-amber-600' : 'text-slate-800'}">${p.stock}</span>
+                          <span class="text-xs text-slate-400">/ ${p.minStock} min</span>
+                        </td>
+                        <td class="px-5 py-3.5">${formatCurrency(p.cost)}</td>
+                        <td class="px-5 py-3.5 font-medium">${formatCurrency(p.price)}</td>
+                        <td class="px-5 py-3.5">${p.warranty} mo</td>
+                        <td class="px-5 py-3.5">
+                          <span class="badge ${p.stock <= p.minStock ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'}">
+                            ${p.stock <= p.minStock ? 'Low Stock' : 'In Stock'}
+                          </span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5" title="Edit"><i class="fas fa-edit"></i></button>
+                          <button class="text-slate-400 hover:text-rose-600 p-1.5" title="Delete"><i class="fas fa-trash"></i></button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      categories() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-slate-500">${data.categories.length} categories</p>
+              <button onclick="showToast('Category form opened (demo)')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i class="fas fa-plus"></i> Add Category
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              ${data.categories.map(c => `
+                <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm card-hover">
+                  <div class="flex items-start justify-between">
+                    <div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center text-lg">
+                      <i class="fas fa-tag"></i>
+                    </div>
+                    <div class="flex gap-1">
+                      <button class="text-slate-400 hover:text-brand-600 p-1"><i class="fas fa-edit text-sm"></i></button>
+                      <button class="text-slate-400 hover:text-rose-600 p-1"><i class="fas fa-trash text-sm"></i></button>
+                    </div>
+                  </div>
+                  <h3 class="font-semibold mt-4 text-slate-900">${c.name}</h3>
+                  <p class="text-sm text-slate-500 mt-1">${c.description}</p>
+                  <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">${c.products} products</span>
+                    <button class="text-xs text-brand-600 font-medium hover:underline">View products →</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      },
+
+      inventory() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="flex flex-col sm:flex-row gap-3 flex-1">
+                <div class="relative flex-1 max-w-md">
+                  <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                  <input
+                    type="text"
+                    id="inventorySearch"
+                    placeholder="Search by product, reference, user..."
+                    class="w-full pl-9 pr-4 py-2.5 text-sm border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent bg-white"
+                    oninput="filterInventory()"
+                  />
+                </div>
+                <select id="inventoryTypeFilter" class="text-sm border border-slate-200 rounded-xl px-3 py-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500" onchange="filterInventory()">
+                  <option value="">All Types</option>
+                  <option value="in">Stock In</option>
+                  <option value="out">Stock Out</option>
+                </select>
+              </div>
+              <div class="flex gap-3">
+                <button onclick="showStockModal('in')" class="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-sm transition">
+                  <i class="fas fa-arrow-down"></i> Stock In
+                </button>
+                <button onclick="showStockModal('out')" class="inline-flex items-center justify-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-sm transition">
+                  <i class="fas fa-arrow-up"></i> Stock Out
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div class="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 class="font-semibold">Stock Movement History</h3>
+                <span id="inventoryResultCount" class="text-xs text-slate-500">${data.stockMovements.length} records</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50 text-slate-500">
+                    <tr class="text-left">
+                      <th class="px-5 py-3.5 font-medium">Type</th>
+                      <th class="px-5 py-3.5 font-medium">Product</th>
+                      <th class="px-5 py-3.5 font-medium">Qty</th>
+                      <th class="px-5 py-3.5 font-medium">Reference</th>
+                      <th class="px-5 py-3.5 font-medium">Date</th>
+                      <th class="px-5 py-3.5 font-medium">User</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inventoryTableBody">
+                    ${data.stockMovements.map(m => `
+                      <tr class="table-row border-t border-slate-50 inventory-row" data-product="${m.product.toLowerCase()}" data-ref="${m.ref.toLowerCase()}" data-user="${m.user.toLowerCase()}" data-type="${m.type}">
+                        <td class="px-5 py-3.5">
+                          <span class="badge ${m.type === 'in' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">
+                            <i class="fas fa-arrow-${m.type === 'in' ? 'down' : 'up'} mr-1"></i>${m.type.toUpperCase()}
+                          </span>
+                        </td>
+                        <td class="px-5 py-3.5 font-medium">${m.product}</td>
+                        <td class="px-5 py-3.5 font-semibold ${m.type === 'in' ? 'text-emerald-600' : 'text-rose-600'}">${m.type === 'in' ? '+' : '-'}${m.qty}</td>
+                        <td class="px-5 py-3.5 text-brand-600">${m.ref}</td>
+                        <td class="px-5 py-3.5">${formatDate(m.date)}</td>
+                        <td class="px-5 py-3.5">${m.user}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+              <div id="inventoryEmpty" class="hidden px-5 py-10 text-center text-slate-500 text-sm">
+                <i class="fas fa-search text-2xl mb-2 opacity-40"></i>
+                <p>No stock movements match your search</p>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      suppliers() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-slate-500">${data.suppliers.length} suppliers</p>
+              <button onclick="showToast('Add supplier form (demo)')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i class="fas fa-plus"></i> Add Supplier
+              </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+              ${data.suppliers.map(s => `
+                <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm card-hover">
+                  <div class="flex items-start justify-between">
+                    <div class="flex items-center gap-3">
+                      <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center text-lg font-bold">
+                        ${s.name.charAt(0)}
+                      </div>
+                      <div>
+                        <h3 class="font-semibold text-slate-900">${s.name}</h3>
+                        <p class="text-xs text-slate-500">${s.city}</p>
+                      </div>
+                    </div>
+                    <span class="badge ${s.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">${s.status}</span>
+                  </div>
+                  <div class="mt-4 space-y-2 text-sm">
+                    <p class="flex items-center gap-2 text-slate-600"><i class="fas fa-user w-4 text-slate-400"></i> ${s.contact}</p>
+                    <p class="flex items-center gap-2 text-slate-600"><i class="fas fa-envelope w-4 text-slate-400"></i> ${s.email}</p>
+                    <p class="flex items-center gap-2 text-slate-600"><i class="fas fa-phone w-4 text-slate-400"></i> ${s.phone}</p>
+                  </div>
+                  <div class="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-xs text-slate-500">${s.products} linked products</span>
+                    <div class="flex gap-2">
+                      <button class="text-xs text-brand-600 font-medium hover:underline">Orders</button>
+                      <button class="text-xs text-slate-500 hover:text-brand-600"><i class="fas fa-edit"></i></button>
+                    </div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        `;
+      },
+
+      purchasing() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-slate-500">${data.purchases.length} purchase orders</p>
+              <button onclick="showToast('New PO form (demo)')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i class="fas fa-plus"></i> New Purchase Order
+              </button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50 text-slate-500">
+                    <tr class="text-left">
+                      <th class="px-5 py-3.5 font-medium">PO Number</th>
+                      <th class="px-5 py-3.5 font-medium">Supplier</th>
+                      <th class="px-5 py-3.5 font-medium">Date</th>
+                      <th class="px-5 py-3.5 font-medium">Items</th>
+                      <th class="px-5 py-3.5 font-medium">Total</th>
+                      <th class="px-5 py-3.5 font-medium">Status</th>
+                      <th class="px-5 py-3.5 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.purchases.map(p => `
+                      <tr class="table-row border-t border-slate-50">
+                        <td class="px-5 py-3.5 font-medium text-brand-600">${p.id}</td>
+                        <td class="px-5 py-3.5">${p.supplier}</td>
+                        <td class="px-5 py-3.5">${formatDate(p.date)}</td>
+                        <td class="px-5 py-3.5">${p.items}</td>
+                        <td class="px-5 py-3.5 font-semibold">${formatCurrency(p.total)}</td>
+                        <td class="px-5 py-3.5">
+                          <span class="badge ${
+                            p.status === 'received' ? 'bg-emerald-100 text-emerald-700' :
+                            p.status === 'partial' ? 'bg-amber-100 text-amber-700' :
+                            'bg-blue-100 text-blue-700'
+                          }">${p.status}</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5" title="View"><i class="fas fa-eye"></i></button>
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5" title="Receive"><i class="fas fa-check"></i></button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      sales() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-slate-500">${data.sales.length} recent invoices</p>
+              <button onclick="showToast('New sale / POS form (demo)')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i class="fas fa-plus"></i> New Sale
+              </button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50 text-slate-500">
+                    <tr class="text-left">
+                      <th class="px-5 py-3.5 font-medium">Invoice</th>
+                      <th class="px-5 py-3.5 font-medium">Customer</th>
+                      <th class="px-5 py-3.5 font-medium">Date</th>
+                      <th class="px-5 py-3.5 font-medium">Items</th>
+                      <th class="px-5 py-3.5 font-medium">Total</th>
+                      <th class="px-5 py-3.5 font-medium">Payment</th>
+                      <th class="px-5 py-3.5 font-medium">Status</th>
+                      <th class="px-5 py-3.5 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.sales.map(s => `
+                      <tr class="table-row border-t border-slate-50">
+                        <td class="px-5 py-3.5 font-medium text-brand-600">${s.id}</td>
+                        <td class="px-5 py-3.5">${s.customer}</td>
+                        <td class="px-5 py-3.5">${formatDate(s.date)}</td>
+                        <td class="px-5 py-3.5">${s.items}</td>
+                        <td class="px-5 py-3.5 font-semibold">${formatCurrency(s.total)}</td>
+                        <td class="px-5 py-3.5 capitalize">${s.payment}</td>
+                        <td class="px-5 py-3.5">
+                          <span class="badge ${s.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">${s.status}</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5" title="View"><i class="fas fa-eye"></i></button>
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5" title="Print"><i class="fas fa-print"></i></button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      customers() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-slate-500">${data.customers.length} customers</p>
+              <button onclick="showToast('Add customer form (demo)')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i class="fas fa-plus"></i> Add Customer
+              </button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50 text-slate-500">
+                    <tr class="text-left">
+                      <th class="px-5 py-3.5 font-medium">Customer</th>
+                      <th class="px-5 py-3.5 font-medium">Contact</th>
+                      <th class="px-5 py-3.5 font-medium">Type</th>
+                      <th class="px-5 py-3.5 font-medium">Orders</th>
+                      <th class="px-5 py-3.5 font-medium">Total Spent</th>
+                      <th class="px-5 py-3.5 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.customers.map(c => `
+                      <tr class="table-row border-t border-slate-50">
+                        <td class="px-5 py-3.5">
+                          <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center text-xs font-bold">
+                              ${c.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                            </div>
+                            <div>
+                              <div class="font-medium">${c.name}</div>
+                              <div class="text-xs text-slate-500">${c.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-5 py-3.5">${c.phone}</td>
+                        <td class="px-5 py-3.5">
+                          <span class="badge ${c.type === 'wholesale' ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-slate-600'}">${c.type}</span>
+                        </td>
+                        <td class="px-5 py-3.5">${c.orders}</td>
+                        <td class="px-5 py-3.5 font-semibold">${formatCurrency(c.spent)}</td>
+                        <td class="px-5 py-3.5 text-right">
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5"><i class="fas fa-eye"></i></button>
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5"><i class="fas fa-edit"></i></button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      warranty() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-slate-500">${data.warranties.length} warranty records</p>
+              <button onclick="showToast('Register warranty form (demo)')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i class="fas fa-plus"></i> Register Warranty
+              </button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50 text-slate-500">
+                    <tr class="text-left">
+                      <th class="px-5 py-3.5 font-medium">Warranty ID</th>
+                      <th class="px-5 py-3.5 font-medium">Product / Serial</th>
+                      <th class="px-5 py-3.5 font-medium">Customer</th>
+                      <th class="px-5 py-3.5 font-medium">Purchase</th>
+                      <th class="px-5 py-3.5 font-medium">Expiry</th>
+                      <th class="px-5 py-3.5 font-medium">Status</th>
+                      <th class="px-5 py-3.5 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.warranties.map(w => `
+                      <tr class="table-row border-t border-slate-50">
+                        <td class="px-5 py-3.5 font-medium text-brand-600">${w.id}</td>
+                        <td class="px-5 py-3.5">
+                          <div class="font-medium">${w.product}</div>
+                          <div class="text-xs text-slate-500 font-mono">${w.serial}</div>
+                        </td>
+                        <td class="px-5 py-3.5">${w.customer}</td>
+                        <td class="px-5 py-3.5">${formatDate(w.purchaseDate)}</td>
+                        <td class="px-5 py-3.5">${formatDate(w.expiry)}</td>
+                        <td class="px-5 py-3.5">
+                          <span class="badge ${w.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">${w.status}</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5" title="Claim"><i class="fas fa-file-medical"></i></button>
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5" title="View"><i class="fas fa-eye"></i></button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      reports() {
+        return `
+          <div class="fade-in space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <p class="text-sm text-slate-500">Gross Profit (Week)</p>
+                <p class="text-2xl font-bold mt-1 text-emerald-600">${formatCurrency(3840)}</p>
+                <p class="text-xs text-slate-500 mt-1">Margin ~28%</p>
+              </div>
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <p class="text-sm text-slate-500">Units Sold (Week)</p>
+                <p class="text-2xl font-bold mt-1">47</p>
+                <p class="text-xs text-emerald-600 mt-1"><i class="fas fa-arrow-up"></i> +9 vs last week</p>
+              </div>
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <p class="text-sm text-slate-500">Avg. Order Value</p>
+                <p class="text-2xl font-bold mt-1">${formatCurrency(1240)}</p>
+                <p class="text-xs text-slate-500 mt-1">Retail + Wholesale</p>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-semibold mb-4">Sales by Category</h3>
+                <canvas id="categoryChart" height="200"></canvas>
+              </div>
+              <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+                <h3 class="font-semibold mb-4">Top Selling Products</h3>
+                <div class="space-y-3">
+                  ${[
+                    { name: 'NVIDIA RTX 4090 24GB', sold: 8, revenue: 12792 },
+                    { name: 'AMD Ryzen 9 7950X', sold: 11, revenue: 6039 },
+                    { name: 'Samsung 990 PRO 2TB', sold: 14, revenue: 2646 },
+                    { name: 'Corsair Vengeance 32GB', sold: 18, revenue: 2322 },
+                    { name: 'ASUS ROG Strix X670E-E', sold: 5, revenue: 2495 },
+                  ].map((p, i) => `
+                    <div class="flex items-center gap-3">
+                      <span class="w-6 h-6 rounded-full bg-brand-50 text-brand-700 text-xs font-bold flex items-center justify-center">${i+1}</span>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium truncate">${p.name}</p>
+                        <p class="text-xs text-slate-500">${p.sold} units</p>
+                      </div>
+                      <span class="text-sm font-semibold">${formatCurrency(p.revenue)}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            </div>
+
+            <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold">Export Reports</h3>
+              </div>
+              <div class="flex flex-wrap gap-3">
+                <button onclick="showToast('Sales report exported (demo)')" class="inline-flex items-center gap-2 border border-slate-200 hover:bg-slate-50 text-sm font-medium px-4 py-2 rounded-xl transition">
+                  <i class="fas fa-file-excel text-emerald-600"></i> Sales Report
+                </button>
+                <button onclick="showToast('Inventory report exported (demo)')" class="inline-flex items-center gap-2 border border-slate-200 hover:bg-slate-50 text-sm font-medium px-4 py-2 rounded-xl transition">
+                  <i class="fas fa-file-excel text-emerald-600"></i> Inventory Report
+                </button>
+                <button onclick="showToast('Purchase report exported (demo)')" class="inline-flex items-center gap-2 border border-slate-200 hover:bg-slate-50 text-sm font-medium px-4 py-2 rounded-xl transition">
+                  <i class="fas fa-file-excel text-emerald-600"></i> Purchase Report
+                </button>
+                <button onclick="showToast('Warranty report exported (demo)')" class="inline-flex items-center gap-2 border border-slate-200 hover:bg-slate-50 text-sm font-medium px-4 py-2 rounded-xl transition">
+                  <i class="fas fa-file-pdf text-rose-600"></i> Warranty Report
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      },
+
+      users() {
+        return `
+          <div class="fade-in space-y-5">
+            <div class="flex justify-between items-center">
+              <p class="text-sm text-slate-500">${data.users.length} system users</p>
+              <button onclick="showToast('Add user form (demo)')" class="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition">
+                <i class="fas fa-plus"></i> Add User
+              </button>
+            </div>
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                  <thead class="bg-slate-50 text-slate-500">
+                    <tr class="text-left">
+                      <th class="px-5 py-3.5 font-medium">User</th>
+                      <th class="px-5 py-3.5 font-medium">Role</th>
+                      <th class="px-5 py-3.5 font-medium">Last Login</th>
+                      <th class="px-5 py-3.5 font-medium">Status</th>
+                      <th class="px-5 py-3.5 font-medium text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${data.users.map(u => `
+                      <tr class="table-row border-t border-slate-50">
+                        <td class="px-5 py-3.5">
+                          <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold">
+                              ${u.name.split(' ').map(n => n[0]).join('').slice(0,2)}
+                            </div>
+                            <div>
+                              <div class="font-medium">${u.name}</div>
+                              <div class="text-xs text-slate-500">${u.email}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td class="px-5 py-3.5">
+                          <span class="badge bg-brand-50 text-brand-700">${u.role}</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-slate-600">${u.lastLogin}</td>
+                        <td class="px-5 py-3.5">
+                          <span class="badge ${u.status === 'active' ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}">${u.status}</span>
+                        </td>
+                        <td class="px-5 py-3.5 text-right">
+                          <button class="text-slate-400 hover:text-brand-600 p-1.5"><i class="fas fa-edit"></i></button>
+                          <button class="text-slate-400 hover:text-rose-600 p-1.5"><i class="fas fa-user-slash"></i></button>
+                        </td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    };
+
+    // ==================== NAVIGATION ====================
+    const pageMeta = {
+      dashboard: { title: 'Dashboard', subtitle: 'Overview of your computer shop' },
+      products: { title: 'Products', subtitle: 'Manage product catalog & pricing' },
+      categories: { title: 'Categories', subtitle: 'Organize products by category' },
+      inventory: { title: 'Stock In / Out', subtitle: 'Track inventory movements' },
+      suppliers: { title: 'Suppliers', subtitle: 'Manage vendor relationships' },
+      purchasing: { title: 'Purchasing', subtitle: 'Purchase orders & receiving' },
+      sales: { title: 'Sales', subtitle: 'Invoices and transactions' },
+      customers: { title: 'Customers', subtitle: 'Customer database & history' },
+      warranty: { title: 'Warranty Tracking', subtitle: 'Serial numbers & claims' },
+      reports: { title: 'Reports', subtitle: 'Analytics and exports' },
+      users: { title: 'User Management', subtitle: 'Roles and access control' },
+    };
+
+    function navigate(page) {
+      document.querySelectorAll('.sidebar-link').forEach(el => {
+        el.classList.remove('active');
+        el.classList.add('text-slate-600');
+      });
+      const link = document.querySelector(`[data-page="${page}"]`);
+      if (link) {
+        link.classList.add('active');
+        link.classList.remove('text-slate-600');
+      }
+      document.getElementById('pageTitle').textContent = pageMeta[page].title;
+      document.getElementById('pageSubtitle').textContent = pageMeta[page].subtitle;
+      document.getElementById('content').innerHTML = pages[page]();
+
+      // Init charts if needed
+      if (page === 'dashboard') initSalesChart();
+      if (page === 'reports') initCategoryChart();
+    }
+
+    document.querySelectorAll('.sidebar-link').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        navigate(link.dataset.page);
+      });
+    });
+
+    // ==================== CHARTS ====================
+    let salesChartInstance = null;
+    let categoryChartInstance = null;
+
+    function initSalesChart() {
+      const ctx = document.getElementById('salesChart');
+      if (!ctx) return;
+      if (salesChartInstance) salesChartInstance.destroy();
+      salesChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [{
+            label: 'Sales ($)',
+            data: [1200, 1900, 1500, 2800, 2200, 3100, 2450],
+            borderColor: '#2563eb',
+            backgroundColor: 'rgba(37, 99, 235, 0.08)',
+            fill: true,
+            tension: 0.4,
+            pointBackgroundColor: '#2563eb',
+            pointRadius: 4,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, grid: { color: '#f1f5f9' }, ticks: { callback: v => '$' + v } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function initCategoryChart() {
+      const ctx = document.getElementById('categoryChart');
+      if (!ctx) return;
+      if (categoryChartInstance) categoryChartInstance.destroy();
+      categoryChartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['GPUs', 'CPUs', 'Storage', 'Memory', 'Motherboards', 'Others'],
+          datasets: [{
+            data: [35, 22, 15, 12, 8, 8],
+            backgroundColor: ['#2563eb', '#7c3aed', '#059669', '#d97706', '#dc2626', '#64748b'],
+            borderWidth: 0,
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
+          },
+          cutout: '65%'
+        }
+      });
+    }
+
+    // ==================== MODALS & HELPERS ====================
+    function showAddProductModal() {
+      openModal(`
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-semibold">Add New Product</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+          </div>
+          <form onsubmit="event.preventDefault(); closeModal(); showToast('Product added (demo)');" class="space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">SKU</label>
+                <input required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="CPU-XXX-000" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Category</label>
+                <select class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                  ${data.categories.map(c => `<option>${c.name}</option>`).join('')}
+                </select>
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Product Name</label>
+              <input required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Full product name" />
+            </div>
+            <div class="grid grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Cost</label>
+                <input type="number" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="0.00" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Price</label>
+                <input type="number" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="0.00" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Warranty (mo)</label>
+                <input type="number" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" value="36" />
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Initial Stock</label>
+                <input type="number" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" value="0" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Min Stock Level</label>
+                <input type="number" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" value="5" />
+              </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button type="submit" class="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg">Save Product</button>
+            </div>
+          </form>
+        </div>
+      `);
+    }
+
+    function showStockModal(type) {
+      openModal(`
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-5">
+            <h3 class="text-lg font-semibold">${type === 'in' ? 'Stock In' : 'Stock Out'}</h3>
+            <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
+          </div>
+          <form onsubmit="event.preventDefault(); closeModal(); showToast('Stock ${type} recorded (demo)');" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Product</label>
+              <select class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                ${data.products.map(p => `<option>${p.name} (${p.sku})</option>`).join('')}
+              </select>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Quantity</label>
+                <input type="number" min="1" required class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" value="1" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">Reference</label>
+                <input class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="${type === 'in' ? 'PO-XXXX' : 'INV-XXXX'}" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Notes</label>
+              <textarea rows="2" class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none" placeholder="Optional notes..."></textarea>
+            </div>
+            <div class="flex justify-end gap-3 pt-2">
+              <button type="button" onclick="closeModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+              <button type="submit" class="px-4 py-2 text-sm font-medium text-white ${type === 'in' ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'} rounded-lg">
+                Confirm ${type === 'in' ? 'Stock In' : 'Stock Out'}
+              </button>
+            </div>
+          </form>
+        </div>
+      `);
+    }
+
+    function filterProducts() {
+      const q = (document.getElementById('productSearch')?.value || '').toLowerCase();
+      const cat = document.getElementById('catFilter')?.value || '';
+      document.querySelectorAll('.product-row').forEach(row => {
+        const matchName = row.dataset.name.includes(q);
+        const matchCat = !cat || row.dataset.cat === cat;
+        row.style.display = matchName && matchCat ? '' : 'none';
+      });
+    }
+
+    function filterInventory() {
+      const q = (document.getElementById('inventorySearch')?.value || '').toLowerCase().trim();
+      const type = document.getElementById('inventoryTypeFilter')?.value || '';
+      const rows = document.querySelectorAll('.inventory-row');
+      let visible = 0;
+
+      rows.forEach(row => {
+        const matchText =
+          row.dataset.product.includes(q) ||
+          row.dataset.ref.includes(q) ||
+          row.dataset.user.includes(q);
+        const matchType = !type || row.dataset.type === type;
+        const show = matchText && matchType;
+        row.style.display = show ? '' : 'none';
+        if (show) visible++;
+      });
+
+      const countEl = document.getElementById('inventoryResultCount');
+      const emptyEl = document.getElementById('inventoryEmpty');
+      if (countEl) countEl.textContent = `${visible} record${visible !== 1 ? 's' : ''}`;
+      if (emptyEl) emptyEl.classList.toggle('hidden', visible > 0);
+    }
+
+    // Dashboard global search
+    function handleDashboardSearch(query) {
+      const box = document.getElementById('dashboardSearchResults');
+      if (!box) return;
+
+      const q = (query || '').trim().toLowerCase();
+      if (!q) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+
+      const results = [];
+
+      // Products
+      data.products.forEach(p => {
+        if (p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q)) {
+          results.push({
+            type: 'Product',
+            icon: 'fa-box',
+            color: 'bg-brand-50 text-brand-600',
+            title: p.name,
+            subtitle: `${p.sku} · Stock: ${p.stock} · ${formatCurrency(p.price)}`,
+            page: 'products'
+          });
+        }
+      });
+
+      // Customers
+      data.customers.forEach(c => {
+        if (c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q) || c.phone.includes(q)) {
+          results.push({
+            type: 'Customer',
+            icon: 'fa-user',
+            color: 'bg-violet-50 text-violet-600',
+            title: c.name,
+            subtitle: `${c.email} · ${c.orders} orders · ${formatCurrency(c.spent)}`,
+            page: 'customers'
+          });
+        }
+      });
+
+      // Sales / Invoices
+      data.sales.forEach(s => {
+        if (s.id.toLowerCase().includes(q) || s.customer.toLowerCase().includes(q)) {
+          results.push({
+            type: 'Invoice',
+            icon: 'fa-receipt',
+            color: 'bg-emerald-50 text-emerald-600',
+            title: s.id,
+            subtitle: `${s.customer} · ${formatCurrency(s.total)} · ${s.status}`,
+            page: 'sales'
+          });
+        }
+      });
+
+      // Warranties
+      data.warranties.forEach(w => {
+        if (w.id.toLowerCase().includes(q) || w.serial.toLowerCase().includes(q) || w.product.toLowerCase().includes(q) || w.customer.toLowerCase().includes(q)) {
+          results.push({
+            type: 'Warranty',
+            icon: 'fa-shield-alt',
+            color: 'bg-amber-50 text-amber-600',
+            title: w.id,
+            subtitle: `${w.product} · ${w.serial} · ${w.status}`,
+            page: 'warranty'
+          });
+        }
+      });
+
+      // Purchase orders
+      data.purchases.forEach(p => {
+        if (p.id.toLowerCase().includes(q) || p.supplier.toLowerCase().includes(q)) {
+          results.push({
+            type: 'Purchase Order',
+            icon: 'fa-shopping-cart',
+            color: 'bg-blue-50 text-blue-600',
+            title: p.id,
+            subtitle: `${p.supplier} · ${formatCurrency(p.total)} · ${p.status}`,
+            page: 'purchasing'
+          });
+        }
+      });
+
+      if (results.length === 0) {
+        box.innerHTML = `
+          <div class="px-5 py-8 text-center text-slate-500 text-sm">
+            <i class="fas fa-search text-2xl mb-2 opacity-40"></i>
+            <p>No results for “${query}”</p>
+          </div>`;
+        box.classList.remove('hidden');
+        return;
+      }
+
+      const limited = results.slice(0, 10);
+      box.innerHTML = limited.map(r => `
+        <button
+          onclick="navigate('${r.page}'); document.getElementById('dashboardSearchResults').classList.add('hidden');"
+          class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 text-left transition border-b border-slate-50 last:border-0"
+        >
+          <div class="w-9 h-9 rounded-lg ${r.color} flex items-center justify-center flex-shrink-0">
+            <i class="fas ${r.icon} text-sm"></i>
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-medium text-slate-900 truncate">${r.title}</span>
+              <span class="badge bg-slate-100 text-slate-500 flex-shrink-0">${r.type}</span>
+            </div>
+            <p class="text-xs text-slate-500 truncate mt-0.5">${r.subtitle}</p>
+          </div>
+          <i class="fas fa-chevron-right text-slate-300 text-xs"></i>
+        </button>
+      `).join('') + (results.length > 10 ? `
+        <div class="px-4 py-2.5 text-xs text-slate-500 bg-slate-50 text-center">
+          +${results.length - 10} more results
+        </div>` : '');
+
+      box.classList.remove('hidden');
+    }
+
+    // Close search results when clicking outside
+    document.addEventListener('click', (e) => {
+      const box = document.getElementById('dashboardSearchResults');
+      const input = document.getElementById('dashboardSearch');
+      if (box && input && !box.contains(e.target) && e.target !== input && !input.contains(e.target)) {
+        box.classList.add('hidden');
+      }
+    });
+
+    // Keyboard shortcut ⌘K / Ctrl+K focuses dashboard search when on dashboard
+    document.addEventListener('keydown', (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        const input = document.getElementById('dashboardSearch');
+        if (input) {
+          e.preventDefault();
+          input.focus();
+        }
+      }
+      if (e.key === 'Escape') {
+        const box = document.getElementById('dashboardSearchResults');
+        if (box) box.classList.add('hidden');
+      }
+    });
+
+    // Init
+    navigate('dashboard');
+  </script>
+</body>
+</html>
