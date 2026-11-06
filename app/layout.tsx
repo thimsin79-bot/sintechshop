@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
+import { AuthProvider } from "@/lib/auth";
 import { DataProvider } from "@/lib/store";
 import { ToastProvider } from "@/lib/toast";
 
@@ -21,7 +22,9 @@ export default function RootLayout({
       <body className={`${inter.className} bg-black text-slate-800 antialiased`}>
         <DataProvider>
           <ToastProvider>
-            <AppShell>{children}</AppShell>
+            <AuthProvider>
+              <AppShell>{children}</AppShell>
+            </AuthProvider>
           </ToastProvider>
         </DataProvider>
       </body>

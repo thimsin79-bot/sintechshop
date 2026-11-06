@@ -298,6 +298,29 @@ export function validateSale(
   return errors;
 }
 
+export interface LoginValues {
+  email: string;
+  password: string;
+}
+
+export function validateLogin(form: LoginValues): FieldErrors<LoginValues> {
+  const errors: FieldErrors<LoginValues> = {};
+
+  if (isBlank(form.email)) {
+    errors.email = "Email is required";
+  } else if (!isValidEmail(form.email)) {
+    errors.email = "Enter a valid email address";
+  }
+
+  if (isBlank(form.password)) {
+    errors.password = "Password is required";
+  } else if (form.password.length < 6) {
+    errors.password = "Password must be at least 6 characters";
+  }
+
+  return errors;
+}
+
 export function validateStockMovement(
   form: StockMovementDraft,
   products: Product[],

@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { NAV_SECTIONS } from "@/lib/navigation";
-import { useToast } from "@/lib/toast";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth";
+import { cn, initials } from "@/lib/utils";
 
 interface SidebarProps {
   open: boolean;
@@ -13,7 +13,13 @@ interface SidebarProps {
 
 export function Sidebar({ open, onNavigate }: SidebarProps) {
   const pathname = usePathname();
-  const { showToast } = useToast();
+  const router = useRouter();
+  const { user, logout } = useAuth();
+
+  function handleLogout() {
+    logout();
+    router.replace("/login");
+  }
 
   return (
     <aside
@@ -66,21 +72,21 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
       <div className="p-4 border-t border-slate-100">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-brand-100 text-brand-700 flex items-center justify-center font-semibold text-sm">
-            AD
+            {initials(user?.name ?? "Admin User")}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium truncate">Admin User</p>
-            <p className="text-xs text-slate-500 truncate">
-              admin@techvault.com
+            <p className="text-sm font-medium truncate">
+              {user?.name ?? "Admin User"}
+            </p>
+            <p className="text-xs text-slate-500 truncate" title={user?.role}>
+              {user?.email ?? "admin@techvault.com"}
             </p>
           </div>
           <button
             type="button"
-            className="text-slate-400 hover:text-slate-600"
+            className="text-slate-400 hover:text-rose-600"
             title="Logout"
-            onClick={() =>
-              showToast("Logout is not available in this demo")
-            }
+            onClick={handleLogout}
           >
             <i className="fas fa-sign-out-alt" />
           </button>
