@@ -52,8 +52,10 @@ export function LoginPage() {
     <div className="min-h-screen bg-white">
       <main className="flex min-h-screen items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
-          <div className="fade-in">
-            <h2 className="text-2xl font-bold text-slate-900">SINTechshop</h2>
+          <div className="fade-in text-center">
+            <h2 className="text-3xl font-bold tracking-tight text-slate-900">
+              SINTechshop
+            </h2>
           </div>
 
           <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
