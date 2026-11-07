@@ -9,6 +9,7 @@ export interface CompanyProfile {
   address: string;
   taxId: string;
   currency: string;
+  logo: string;
 }
 
 export interface ActivityEntry {
@@ -34,6 +35,7 @@ export const DEFAULT_COMPANY_PROFILE: CompanyProfile = {
   address: "123 Tech Street, San Francisco, CA",
   taxId: "",
   currency: "USD",
+  logo: "",
 };
 
 export function loadCompanyProfile(): CompanyProfile {
@@ -70,6 +72,10 @@ export function loadCompanyProfile(): CompanyProfile {
         typeof parsed.currency === "string"
           ? parsed.currency
           : DEFAULT_COMPANY_PROFILE.currency,
+      logo:
+        typeof parsed.logo === "string"
+          ? parsed.logo
+          : DEFAULT_COMPANY_PROFILE.logo,
     };
   } catch (error) {
     console.warn("Unable to load company profile.", error);

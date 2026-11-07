@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormError } from "@/components/forms/FormError";
 import { DEMO_ACCOUNTS, useAuth } from "@/lib/auth";
+import { useCompany } from "@/lib/company";
 import { useToast } from "@/lib/toast";
 import { useForm } from "@/lib/useForm";
 import { validateLogin, type LoginValues } from "@/lib/validation";
@@ -16,6 +17,7 @@ const demo = DEMO_ACCOUNTS[0];
 export function LoginPage() {
   const router = useRouter();
   const { user, ready, login } = useAuth();
+  const { profile } = useCompany();
   const { showToast } = useToast();
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -54,8 +56,15 @@ export function LoginPage() {
       <main className="flex min-h-screen items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="fade-in text-center">
+            {profile.logo ? (
+              <img
+                src={profile.logo}
+                alt={`${profile.name} logo`}
+                className="mx-auto mb-4 h-16 w-16 rounded-2xl object-contain"
+              />
+            ) : null}
             <h2 className="text-3xl font-bold tracking-tight text-slate-900">
-              SINTechshop
+              {profile.name}
             </h2>
           </div>
 

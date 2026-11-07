@@ -4,6 +4,7 @@ import "@fortawesome/fontawesome-free/css/all.min.css";
 import "./globals.css";
 import { AppShell } from "@/components/layout/AppShell";
 import { AuthProvider } from "@/lib/auth";
+import { CompanyProvider } from "@/lib/company";
 import { DataProvider } from "@/lib/store";
 import { ToastProvider } from "@/lib/toast";
 
@@ -21,11 +22,13 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} app-background text-slate-800 antialiased`}>
         <DataProvider>
-          <ToastProvider>
-            <AuthProvider>
-              <AppShell>{children}</AppShell>
-            </AuthProvider>
-          </ToastProvider>
+          <CompanyProvider>
+            <ToastProvider>
+              <AuthProvider>
+                <AppShell>{children}</AppShell>
+              </AuthProvider>
+            </ToastProvider>
+          </CompanyProvider>
         </DataProvider>
       </body>
     </html>

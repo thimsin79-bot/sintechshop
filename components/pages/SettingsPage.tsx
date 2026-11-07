@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FormError } from "@/components/forms/FormError";
+import { useCompany } from "@/lib/company";
 import { useData } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import {
@@ -9,9 +10,7 @@ import {
   DEFAULT_COMPANY_PROFILE,
   buildActivityLog,
   loadActivityEntries,
-  loadCompanyProfile,
   recordActivity,
-  saveCompanyProfile,
   type ActivityEntry,
   type CompanyProfile,
 } from "@/lib/settings";
@@ -27,15 +26,20 @@ const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SettingsPage() {
   const { data } = useData();
+  const { profile, saveProfile, resetProfile } = useCompany();
   const { showToast } = useToast();
-  const [profile, setProfile] = useState<CompanyProfile>(DEFAULT_COMPANY_PROFILE);
+  const [draft, setDraft] = useState<CompanyProfile>(profile);
   const [logged, setLogged] = useState<ActivityEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [logoError, setLogoError] = useState<string | null>(null);
 
   useEffect(() => {
-    setProfile(loadCompanyProfile());
     setLogged(loadActivityEntries());
   }, []);
+
+  useEffect(() => {
+    setDraft(profile);
+  }, [profile]);
 
   const activity = useMemo(
     () =>
@@ -49,47 +53,82 @@ export function SettingsPage() {
     key: K,
     value: CompanyProfile[K],
   ) {
-    setProfile((current) => ({ ...current, [key]: value }));
+    setDraft((current) => ({ ...current, [key]: value }));
     setError(null);
+  }
+
+  function handleLogoChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      setLogoError("Please choose an image file");
+      return;
+    }
+    if (file.size > 1024 * 1024) {
+      setLogoError("Logo must be 1 MB or smaller");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      if (typeof reader.result === "string") {
+        update("logo", reader.result);
+        setLogoError(null);
+      }
+    };
+    reader.onerror = () => setLogoError("Unable to read the selected file");
+    reader.readAsDataURL(file);
   }
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!profile.name.trim()) {
+    const trimmed: CompanyProfile = {
+      ...draft,
+      name: draft.name.trim(),
+      email: draft.email.trim(),
+    };
+
+    if (!trimmed.name) {
       setError("Company name is required");
       return;
     }
-    if (profile.email && !EMAIL_PATTERN.test(profile.email.trim())) {
+    if (trimmed.email && !EMAIL_PATTERN.test(trimmed.email)) {
       setError("Company email is not valid");
       return;
     }
-    if (!saveCompanyProfile(profile)) {
+    if (!saveProfile(trimmed)) {
       setError("Unable to save the company profile. Please try again.");
       return;
     }
 
     recordActivity({
-      icon: "fa-building",
+      icon: trimmed.logo !== profile.logo ? "fa-image" : "fa-building",
       color: "bg-brand-50 text-brand-600",
-      title: "Company profile updated",
-      detail: profile.name,
+      title:
+        trimmed.logo !== profile.logo
+          ? "Company logo updated"
+          : "Company profile updated",
+      detail: trimmed.name,
     });
     setLogged(loadActivityEntries());
     setError(null);
+    setLogoError(null);
     showToast("Company profile saved");
   }
 
   function handleReset() {
-    const restored = { ...DEFAULT_COMPANY_PROFILE };
-    setProfile(restored);
+    resetProfile();
+    setDraft({ ...DEFAULT_COMPANY_PROFILE });
     setError(null);
-    saveCompanyProfile(restored);
+    setLogoError(null);
     recordActivity({
       icon: "fa-rotate-left",
       color: "bg-slate-100 text-slate-600",
       title: "Company profile reset",
-      detail: restored.name,
+      detail: DEFAULT_COMPANY_PROFILE.name,
     });
     setLogged(loadActivityEntries());
     showToast("Company profile reset to defaults");
@@ -115,6 +154,59 @@ export function SettingsPage() {
             </div>
           </div>
 
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-5 p-4 rounded-xl border border-slate-100 bg-slate-50/60">
+            <div className="w-20 h-20 shrink-0 rounded-2xl border border-slate-200 bg-white flex items-center justify-center overflow-hidden">
+              {draft.logo ? (
+                <img
+                  src={draft.logo}
+                  alt="Company logo preview"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <i className="fas fa-image text-2xl text-slate-300" />
+              )}
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-medium text-slate-700">Company logo</p>
+              <p className="text-xs text-slate-500">
+                PNG, JPG, WebP or SVG up to 1 MB
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <label
+                  htmlFor="company-logo"
+                  className="inline-flex items-center gap-2 border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 text-sm font-medium px-3 py-2 rounded-lg cursor-pointer transition"
+                >
+                  <i className="fas fa-upload" />
+                  {draft.logo ? "Change logo" : "Upload logo"}
+                </label>
+                {draft.logo ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      update("logo", "");
+                      setLogoError(null);
+                    }}
+                    className="inline-flex items-center gap-2 border border-rose-200 bg-white hover:bg-rose-50 text-rose-600 text-sm font-medium px-3 py-2 rounded-lg transition"
+                  >
+                    <i className="fas fa-trash" /> Remove
+                  </button>
+                ) : null}
+              </div>
+              {logoError ? (
+                <p role="alert" className="mt-2 text-xs text-rose-600">
+                  {logoError}
+                </p>
+              ) : null}
+            </div>
+            <input
+              id="company-logo"
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleLogoChange}
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
               <label htmlFor="company-name" className={labelClass}>
@@ -122,7 +214,7 @@ export function SettingsPage() {
               </label>
               <input
                 id="company-name"
-                value={profile.name}
+                value={draft.name}
                 onChange={(event) => update("name", event.target.value)}
                 className={inputClass}
                 placeholder="Your company name"
@@ -136,7 +228,7 @@ export function SettingsPage() {
               <input
                 id="company-email"
                 type="email"
-                value={profile.email}
+                value={draft.email}
                 onChange={(event) => update("email", event.target.value)}
                 className={inputClass}
                 placeholder="hello@company.com"
@@ -149,7 +241,7 @@ export function SettingsPage() {
               </label>
               <input
                 id="company-phone"
-                value={profile.phone}
+                value={draft.phone}
                 onChange={(event) => update("phone", event.target.value)}
                 className={inputClass}
                 placeholder="+1 555-0100"
@@ -162,7 +254,7 @@ export function SettingsPage() {
               </label>
               <input
                 id="company-website"
-                value={profile.website}
+                value={draft.website}
                 onChange={(event) => update("website", event.target.value)}
                 className={inputClass}
                 placeholder="https://company.com"
@@ -175,7 +267,7 @@ export function SettingsPage() {
               </label>
               <input
                 id="company-tax"
-                value={profile.taxId}
+                value={draft.taxId}
                 onChange={(event) => update("taxId", event.target.value)}
                 className={inputClass}
                 placeholder="VAT / Tax number"
@@ -189,7 +281,7 @@ export function SettingsPage() {
               <textarea
                 id="company-address"
                 rows={2}
-                value={profile.address}
+                value={draft.address}
                 onChange={(event) => update("address", event.target.value)}
                 className={inputClass}
                 placeholder="Street, city, country"
@@ -202,7 +294,7 @@ export function SettingsPage() {
               </label>
               <select
                 id="company-currency"
-                value={profile.currency}
+                value={draft.currency}
                 onChange={(event) => update("currency", event.target.value)}
                 className={inputClass}
               >

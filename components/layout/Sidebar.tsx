@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { NAV_SECTIONS } from "@/lib/navigation";
 import { useAuth } from "@/lib/auth";
+import { useCompany } from "@/lib/company";
 import { cn, initials } from "@/lib/utils";
 
 interface SidebarProps {
@@ -15,6 +16,7 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuth();
+  const { profile } = useCompany();
 
   function handleLogout() {
     logout();
@@ -30,12 +32,20 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
     >
       <div className="p-5 border-b border-slate-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
-            <i className="fas fa-laptop text-lg" />
-          </div>
+          {profile.logo ? (
+            <img
+              src={profile.logo}
+              alt={`${profile.name} logo`}
+              className="w-10 h-10 rounded-xl object-contain bg-white border border-slate-100"
+            />
+          ) : (
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center text-white shadow-lg shadow-brand-500/30">
+              <i className="fas fa-laptop text-lg" />
+            </div>
+          )}
           <div>
             <h1 className="font-bold text-lg leading-tight text-slate-900">
-              TechVault
+              {profile.name}
             </h1>
             <p className="text-xs text-slate-500">Inventory System</p>
           </div>
