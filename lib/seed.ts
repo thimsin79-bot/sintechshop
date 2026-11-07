@@ -68,9 +68,9 @@ export const seedData: ShopData = {
     { id: 6, type: "in", product: "Lian Li O11 Dynamic EVO", qty: 5, ref: "PO-2024-091", date: "2024-11-01", user: "Admin" },
   ],
   users: [
-    { id: 1, name: "Admin User", email: "admin@techvault.com", role: "Administrator", lastLogin: "2024-11-05 08:12", status: "active" },
-    { id: 2, name: "Sarah Sales", email: "sarah@techvault.com", role: "Sales Staff", lastLogin: "2024-11-05 07:45", status: "active" },
-    { id: 3, name: "Mike Inventory", email: "mike@techvault.com", role: "Inventory Manager", lastLogin: "2024-11-04 16:30", status: "active" },
-    { id: 4, name: "Lisa Accounts", email: "lisa@techvault.com", role: "Accountant", lastLogin: "2024-11-03 11:20", status: "inactive" },
+    { id: 1, name: "Admin User", email: "admin@sintech.com", role: "Administrator", lastLogin: "2024-11-05 08:12", status: "active" },
+    { id: 2, name: "Sarah Sales", email: "sarah@sintech.com", role: "Sales Staff", lastLogin: "2024-11-05 07:45", status: "active" },
+    { id: 3, name: "Mike Inventory", email: "mike@sintech.com", role: "Inventory Manager", lastLogin: "2024-11-04 16:30", status: "active" },
+    { id: 4, name: "Lisa Accounts", email: "lisa@sintech.com", role: "Accountant", lastLogin: "2024-11-03 11:20", status: "inactive" },
   ],
 };

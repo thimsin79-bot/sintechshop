@@ -18,8 +18,8 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
   const { user, logout } = useAuth();
   const { profile } = useCompany();
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logout();
     router.replace("/login");
   }
 
@@ -89,7 +89,7 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
               {user?.name ?? "Admin User"}
             </p>
             <p className="text-xs text-slate-500 truncate" title={user?.role}>
-              {user?.email ?? "admin@techvault.com"}
+              {user?.email ?? "admin@sintech.com"}
             </p>
           </div>
           <button

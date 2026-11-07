@@ -21,17 +21,17 @@ export interface ActivityEntry {
   date: string;
 }
 
-const COMPANY_KEY = "techvault.company.v1";
-const ACTIVITY_KEY = "techvault.activity.v1";
+const COMPANY_KEY = "sintech.company.v1";
+const ACTIVITY_KEY = "sintech.activity.v1";
 const MAX_ACTIVITY = 25;
 
 export const CURRENCIES = ["USD", "EUR", "GBP", "THB", "JPY", "AUD"] as const;
 
 export const DEFAULT_COMPANY_PROFILE: CompanyProfile = {
-  name: "TechVault",
-  email: "hello@techvault.com",
+  name: "SINTech",
+  email: "hello@sintech.com",
   phone: "+1 555-0100",
-  website: "https://techvault.example",
+  website: "https://sintech.example",
   address: "123 Tech Street, San Francisco, CA",
   taxId: "",
   currency: "USD",

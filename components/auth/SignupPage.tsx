@@ -18,6 +18,7 @@ export function SignupPage() {
   const { profile } = useCompany();
   const { showToast } = useToast();
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { values, errors, formError, setValue, setFormError, submit } =
     useForm<SignupValues>(
       { name: "", email: "", password: "", confirmPassword: "" },
@@ -30,13 +31,18 @@ export function SignupPage() {
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     submit(event, (draft) => {
-      const error = register(draft.name, draft.email, draft.password);
-      if (error) {
-        setFormError(error);
-        return;
-      }
-      showToast("Account created successfully");
-      router.replace("/");
+      setSubmitting(true);
+      void register(draft.name, draft.email, draft.password)
+        .then((error) => {
+          if (error) {
+            setFormError(error);
+            return;
+          }
+          showToast("Account created successfully");
+          router.replace("/");
+        })
+        .catch(() => setFormError("Unable to create account. Please try again."))
+        .finally(() => setSubmitting(false));
     });
   }
 
@@ -128,7 +134,7 @@ export function SignupPage() {
                   aria-describedby={
                     errors.email ? "signup-email-error" : undefined
                   }
-                  placeholder="you@techvault.com"
+                  placeholder="you@sintech.com"
                 />
               </div>
               {errors.email ? (
@@ -234,10 +240,13 @@ export function SignupPage() {
 
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+              disabled={submitting}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <i className="fas fa-user-plus" />
-              Create account
+              <i
+                className={`fas ${submitting ? "fa-circle-notch fa-spin" : "fa-user-plus"}`}
+              />
+              {submitting ? "Creating account..." : "Create account"}
             </button>
           </form>
 
@@ -252,8 +261,8 @@ export function SignupPage() {
           </p>
 
           <p className="mt-8 text-center text-xs text-slate-400">
-            Protected demo environment. Accounts are stored locally in this
-            browser.
+            Accounts are secured by Neon Auth and stored in your Neon Postgres
+            database.
           </p>
         </div>
       </main>

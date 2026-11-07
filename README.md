@@ -1,11 +1,13 @@
-# TechVault - Computer Shop Inventory System
+# SINTech - Computer Shop Inventory System
 
-TechVault is a demo inventory and sales management dashboard for a computer shop. It is built with Next.js App Router, React, TypeScript, and Tailwind CSS. The app manages products, categories, suppliers, purchase orders, sales, customers, warranties, stock movements, reports, and system users from a single interface.
+SINTech is an inventory and sales management dashboard for a computer shop. It is built with Next.js App Router, React, TypeScript, and Tailwind CSS. The app manages products, categories, suppliers, purchase orders, sales, customers, warranties, stock movements, reports, and system users from a single interface.
 
-All data is stored in the browser using `localStorage`, so the project runs without a backend or database.
+Application data is stored in Neon Postgres through Prisma, and accounts are managed by Neon Managed Better Auth. Every request to the store API requires an authenticated session.
 
 ## Features
 
+- Email/password authentication with Neon Auth (sign up, sign in, sign out, session persistence)
+- Protected application routes and authenticated API access
 - Dashboard with sales overview, low-stock alerts, inventory value, recent sales, and recent stock movements
 - Live dashboard search across products, customers, invoices, warranties, and purchase orders
 - Product and category management
@@ -17,9 +19,9 @@ All data is stored in the browser using `localStorage`, so the project runs with
 - Warranty registration, claims, and expiry tracking
 - Reports with category chart, sales metrics, and CSV exports
 - User management with active/inactive status and role assignment
-- Reset-to-demo-data action
+- Reset-to-demo-data action backed by a database transaction
 - Responsive layout with mobile sidebar
-- Persistent demo data across page reloads
+- Persistent data across browsers and devices via Neon Postgres
 
 ## Tech Stack
 
@@ -27,6 +29,9 @@ All data is stored in the browser using `localStorage`, so the project runs with
 - React 19
 - TypeScript
 - Tailwind CSS v4
+- [Prisma 7](https://www.prisma.io/) with the Neon serverless driver
+- [Neon Postgres](https://neon.tech/) for data storage
+- [Neon Managed Better Auth](https://neon.tech/docs/guides/neon-auth) for authentication
 - Chart.js
 - Font Awesome 6
 
@@ -42,6 +47,36 @@ All data is stored in the browser using `localStorage`, so the project runs with
 ```bash
 npm install
 ```
+
+### Configure environment variables
+
+Copy `.env.example` to `.env.local` and fill in the values from the Neon Console:
+
+```bash
+cp .env.example .env.local
+```
+
+| Variable | Description |
+| --- | --- |
+| `NEON_AUTH_BASE_URL` | Managed Better Auth URL, e.g. `https://<endpoint>.neonauth.<region>.aws.neon.tech/neondb/auth` |
+| `NEON_AUTH_COOKIE_SECRET` | Random 32-byte base64 secret used to sign session cookies |
+| `DATABASE_URL` | Pooled Postgres connection string (used by the app at runtime) |
+| `DIRECT_URL` | Direct (non-pooled) Postgres connection string (used by Prisma CLI migrations and seeding) |
+
+Generate a cookie secret with:
+
+```bash
+openssl rand -base64 32
+```
+
+### Prepare the database
+
+```bash
+npm run db:push
+npm run db:seed
+```
+
+`db:push` creates the normalized schema (categories, products, suppliers, purchases, sales, customers, warranties, stock movements, users). `db:seed` loads the demo records from `lib/seed.ts`.
 
 ### Run the development server
 
@@ -72,6 +107,10 @@ npm run typecheck
 | `npm run build` | Create a production build |
 | `npm start` | Start the production server after building |
 | `npm run typecheck` | Run TypeScript without emitting files |
+| `npm run db:generate` | Generate the Prisma client into `lib/generated/prisma` |
+| `npm run db:push` | Push the Prisma schema to the database |
+| `npm run db:migrate` | Create and apply a development migration |
+| `npm run db:seed` | Reset the database and load demo data |
 
 ## Routes
 
@@ -88,6 +127,11 @@ npm run typecheck
 | `/warranty` | Warranty tracking |
 | `/reports` | Analytics and CSV exports |
 | `/users` | User management and demo-data reset |
+| `/settings` | Company profile and preferences |
+| `/login` | Sign in |
+| `/signup` | Create an account |
+
+All routes except `/login` and `/signup` require an authenticated session.
 
 The products page accepts optional query parameters:
 
@@ -101,6 +145,8 @@ app/
   layout.tsx              Root layout and application providers
   page.tsx                Dashboard route
   globals.css             Tailwind theme and shared styles
+  api/auth/[...path]/     Neon Auth handler
+  api/store/route.ts      Authenticated GET/POST store API
   products/page.tsx       Products route
   categories/page.tsx     Categories route
   inventory/page.tsx      Inventory route
@@ -111,6 +157,9 @@ app/
   warranty/page.tsx       Warranty route
   reports/page.tsx        Reports route
   users/page.tsx          Users route
+  settings/page.tsx       Settings route
+  login/page.tsx          Sign in route
+  signup/page.tsx         Sign up route
 
 components/
   layout/                 Sidebar, header, application shell
@@ -118,49 +167,60 @@ components/
   modals/                 Create/edit/view modal components
   ui/                     Modal, modal header, confirmation dialog
   charts/                 Chart.js wrappers
+  auth/                   Login and signup screens
 
 lib/
-  store.tsx               DataProvider, persistence, and all data operations
-  seed.ts                 Demo seed data
+  store.tsx               DataProvider, API dispatch, and data operations
+  auth.tsx                Neon Auth client context
+  auth-client.ts          Neon Auth browser client
+  auth-server.ts          Neon Auth server instance
+  db/prisma.ts            Prisma client with the Neon serverless adapter
+  server/store.ts         Database queries, seed/reset, and action handlers
   types.ts                TypeScript entity and draft types
+  seed.ts                 Demo seed data
   utils.ts                Formatting, ID generation, date helpers, CSV export
   navigation.ts           Navigation items and page metadata
   styles.ts               Shared Tailwind class constants
   toast.tsx               Toast provider and hook
+
+prisma/
+  schema.prisma           Normalized data model
+  seed.ts                 Prisma seed entry point
 
 legacy/                   Original standalone HTML/CSS/JS implementation
 ```
 
 ## Data and Persistence
 
-Demo data is defined in `lib/seed.ts` and loaded into the `DataProvider` in `lib/store.tsx`.
+- Accounts and sessions are managed by Neon Auth. The browser talks to the Next.js auth handler at `/api/auth/*`, which proxies requests to your Managed Better Auth instance.
+- Shop data is stored in Neon Postgres using the normalized schema in `prisma/schema.prisma`.
+- `lib/server/store.ts` reads the full dataset into the client shape and executes every mutation in a database transaction.
+- The browser loads data with `GET /api/store` after sign-in and sends mutations to `POST /api/store` as `{ action, payload }`.
+- The server returns the refreshed dataset after each mutation, so all open pages stay in sync.
+- Deletes preserve historical records through nullable foreign keys and name snapshots.
+- Use **Users > Reset Demo Data** to truncate the tables and re-seed the demo dataset.
 
-- Storage key: `techvault.data.v1`
-- Storage location: browser `localStorage`
-- Data is scoped to the current browser and device
-- Changes are saved automatically after each data mutation
-- Use **Users > Reset Demo Data** to restore the original seed data
-
-Because persistence is local-only, clearing browser storage also clears saved changes. There is no authentication, API, or multi-user synchronization.
+The old `localStorage` keys (`techvault.data.v1`, `techvault.session.v1`, `techvault.accounts.v1`) are cleared automatically on first load.
 
 ## Main Data Operations
 
-The shared `useData()` hook exposes:
+The shared `useData()` hook exposes the same API as before, but each action dispatches to the server:
 
 - Product, category, supplier, customer, and user create/update actions
 - Purchase order creation and receiving
-- Sale creation and refunds
+- Sale creation, refunds, and deletion
 - Warranty registration and claims
-- Stock In / Out recording
+- Stock In / Out recording, editing, and deletion
 - Record deletion
 - Demo data reset
 
-Validation is handled in the store before updates are applied, including stock availability checks for sales and stock-out operations.
+Validation still runs in the browser for immediate feedback, including stock availability checks for sales and stock-out operations. The server re-validates every mutation before writing.
 
 ## Notes
 
-- This is a front-end demo application; the user management page does not provide real authentication.
-- Reports use demo analytics and seeded sales data. Some chart data is illustrative.
+- The user management page manages application users for display and role assignment; authentication itself is handled by Neon Auth.
+- Reports use the live sales and stock data from Postgres.
 - Invoice printing uses the browser's native print dialog.
 - The original vanilla JavaScript version remains available in `legacy/` for reference.
-- No automated test suite is included. The project has been verified with `npm run typecheck`, `npm run build`, and a headless browser smoke test covering all routes, modals, search, product creation, and persistence after reload.
+- Run `npm run typecheck` and `npm run build` after changing the schema or server actions.
+- `lib/generated/` is ignored by git; run `npm run db:generate` after cloning or changing the schema.

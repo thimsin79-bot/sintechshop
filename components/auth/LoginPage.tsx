@@ -4,15 +4,13 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormError } from "@/components/forms/FormError";
-import { DEMO_ACCOUNTS, useAuth } from "@/lib/auth";
+import { useAuth } from "@/lib/auth";
 import { useCompany } from "@/lib/company";
 import { useToast } from "@/lib/toast";
 import { useForm } from "@/lib/useForm";
 import { validateLogin, type LoginValues } from "@/lib/validation";
 import { inputClass, invalidInputClass, labelClass } from "@/lib/styles";
 import { cn } from "@/lib/utils";
-
-const demo = DEMO_ACCOUNTS[0];
 
 export function LoginPage() {
   const router = useRouter();
@@ -21,6 +19,7 @@ export function LoginPage() {
   const { showToast } = useToast();
   const [remember, setRemember] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const { values, errors, formError, setValue, setFormError, submit } =
     useForm<LoginValues>({ email: "", password: "" }, validateLogin);
 
@@ -30,13 +29,18 @@ export function LoginPage() {
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     submit(event, (draft) => {
-      const error = login(draft.email, draft.password, remember);
-      if (error) {
-        setFormError(error);
-        return;
-      }
-      showToast("Signed in successfully");
-      router.replace("/");
+      setSubmitting(true);
+      void login(draft.email, draft.password, remember)
+        .then((error) => {
+          if (error) {
+            setFormError(error);
+            return;
+          }
+          showToast("Signed in successfully");
+          router.replace("/");
+        })
+        .catch(() => setFormError("Unable to sign in. Please try again."))
+        .finally(() => setSubmitting(false));
     });
   }
 
@@ -90,7 +94,7 @@ export function LoginPage() {
                   aria-describedby={
                     errors.email ? "login-email-error" : undefined
                   }
-                  placeholder="you@techvault.com"
+                  placeholder="you@sintech.com"
                 />
               </div>
               {errors.email ? (
@@ -180,10 +184,13 @@ export function LoginPage() {
 
             <button
               type="submit"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2"
+              disabled={submitting}
+              className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-brand-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <i className="fas fa-right-to-bracket" />
-              Sign in
+              <i
+                className={`fas ${submitting ? "fa-circle-notch fa-spin" : "fa-right-to-bracket"}`}
+              />
+              {submitting ? "Signing in..." : "Sign in"}
             </button>
           </form>
 
@@ -197,35 +204,9 @@ export function LoginPage() {
             </Link>
           </p>
 
-          <div className="mt-6 rounded-xl border border-brand-100 bg-brand-50/70 p-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-brand-700">
-                  Demo account
-                </p>
-                <p className="mt-1 text-sm font-medium text-slate-800">
-                  {demo.email}
-                </p>
-                <p className="text-sm text-slate-500">
-                  Password: {demo.password}
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setValue("email", demo.email);
-                  setValue("password", demo.password);
-                  setFormError(null);
-                }}
-                className="shrink-0 rounded-lg border border-brand-200 bg-white px-3 py-1.5 text-xs font-medium text-brand-700 transition hover:bg-brand-50"
-              >
-                Fill
-              </button>
-            </div>
-          </div>
-
           <p className="mt-8 text-center text-xs text-slate-400">
-            Protected demo environment. Data is stored locally in this browser.
+            Accounts are secured by Neon Auth. Shop data is stored in your Neon
+            Postgres database.
           </p>
         </div>
       </main>

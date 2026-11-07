@@ -82,7 +82,7 @@ export function UserModal({ open, user, onClose }: UserModalProps) {
               value={values.email}
               onChange={(event) => setValue("email", event.target.value)}
               className={inputClass}
-              placeholder="jane@techvault.com"
+              placeholder="jane@sintech.com"
             />
           </FormField>
           <div className="grid grid-cols-2 gap-4">

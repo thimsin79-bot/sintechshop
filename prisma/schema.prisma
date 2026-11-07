@@ -1,0 +1,135 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Category {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique
+  description String    @default("")
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Product {
+  id         Int             @id @default(autoincrement())
+  sku        String          @unique
+  name       String
+  categoryId Int?
+  category   Category?       @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  brand      String          @default("")
+  price      Decimal         @db.Decimal(12, 2)
+  cost       Decimal         @db.Decimal(12, 2)
+  stock      Int             @default(0)
+  minStock   Int             @default(0)
+  warranty   Int             @default(0)
+  status     String          @default("active")
+  sales      Sale[]
+  warranties Warranty[]
+  movements  StockMovement[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model Supplier {
+  id        Int        @id @default(autoincrement())
+  name      String     @unique
+  contact   String     @default("")
+  email     String     @default("")
+  phone     String     @default("")
+  city      String     @default("")
+  products  Int        @default(0)
+  status    String     @default("active")
+  purchases Purchase[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Purchase {
+  id           String   @id
+  supplierId   Int?
+  supplier     Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
+  supplierName String   @default("")
+  date         String
+  items        Int      @default(0)
+  total        Decimal  @db.Decimal(12, 2)
+  status       String   @default("ordered")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Customer {
+  id         Int        @id @default(autoincrement())
+  name       String
+  email      String     @default("")
+  phone      String     @default("")
+  orders     Int        @default(0)
+  spent      Decimal    @default(0) @db.Decimal(12, 2)
+  type       String     @default("retail")
+  sales      Sale[]
+  warranties Warranty[]
+  createdAt  DateTime   @default(now())
+  updatedAt  DateTime   @updatedAt
+}
+
+model Sale {
+  id           String   @id
+  customerId   Int?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName String   @default("")
+  productId    Int?
+  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  date         String
+  items        Int      @default(0)
+  total        Decimal  @db.Decimal(12, 2)
+  status       String   @default("completed")
+  payment      String   @default("card")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Warranty {
+  id           String    @id
+  productId    Int?
+  product      Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName  String    @default("")
+  serial       String
+  customerId   Int?
+  customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
+  customerName String    @default("")
+  purchaseDate String
+  expiry       String
+  status       String    @default("active")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model StockMovement {
+  id          Int      @id @default(autoincrement())
+  type        String
+  productId   Int?
+  product     Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+  productName String   @default("")
+  qty         Int
+  ref         String   @default("")
+  date        String
+  user        String   @default("Admin")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  role      String   @default("Sales Staff")
+  lastLogin String   @default("—")
+  status    String   @default("active")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}

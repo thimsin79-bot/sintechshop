@@ -11,7 +11,7 @@ import { ToastProvider } from "@/lib/toast";
 const inter = Inter({ subsets: ["latin"], display: "swap" });
 
 export const metadata: Metadata = {
-  title: "TechVault • Computer Shop Inventory",
+  title: "SINTech • Computer Shop Inventory",
   description: "Inventory, sales and warranty management for a computer shop.",
 };
 
@@ -21,15 +21,15 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} app-background text-slate-800 antialiased`}>
-        <DataProvider>
+        <AuthProvider>
           <CompanyProvider>
             <ToastProvider>
-              <AuthProvider>
+              <DataProvider>
                 <AppShell>{children}</AppShell>
-              </AuthProvider>
+              </DataProvider>
             </ToastProvider>
           </CompanyProvider>
-        </DataProvider>
+        </AuthProvider>
       </body>
     </html>
   );

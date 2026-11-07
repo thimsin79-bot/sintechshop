@@ -15,7 +15,7 @@ export interface NotificationState {
   dismissed: string[];
 }
 
-const STORAGE_KEY = "techvault.notifications.v1";
+const STORAGE_KEY = "sintech.notifications.v1";
 
 export const EMPTY_NOTIFICATION_STATE: NotificationState = {
   read: [],

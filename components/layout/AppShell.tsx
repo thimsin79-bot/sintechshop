@@ -5,11 +5,13 @@ import { usePathname, useRouter } from "next/navigation";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { useAuth } from "@/lib/auth";
+import { useData } from "@/lib/store";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, ready } = useAuth();
+  const { ready: dataReady } = useData();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
@@ -24,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   if (isAuthPage) return <>{children}</>;
 
-  if (!ready || !user) {
+  if (!ready || !user || !dataReady) {
     return (
       <div className="flex h-screen items-center justify-center bg-transparent">
         <div className="flex flex-col items-center gap-3 text-slate-400">

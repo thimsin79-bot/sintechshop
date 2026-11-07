@@ -5,16 +5,16 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
-import { seedData } from "./seed";
+import { useAuth } from "./auth";
 import type {
   CategoryDraft,
   CollectionKey,
   CustomerDraft,
   ProductDraft,
-  ProductStatus,
   PurchaseDraft,
   SaleDraft,
   ShopData,
@@ -23,32 +23,24 @@ import type {
   UserDraft,
   WarrantyDraft,
 } from "./types";
-import {
-  cloneData,
-  nextCode,
-  nextId,
-  nextPurchaseId,
-  todayISO,
-} from "./utils";
 
-const STORAGE_KEY = "techvault.data.v1";
+const emptyData: ShopData = {
+  products: [],
+  categories: [],
+  suppliers: [],
+  purchases: [],
+  sales: [],
+  customers: [],
+  warranties: [],
+  stockMovements: [],
+  users: [],
+};
 
-function loadData(): ShopData {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      const saved = JSON.parse(raw) as Record<string, unknown>;
-      const merged = cloneData(seedData) as unknown as Record<string, unknown>;
-      Object.keys(merged).forEach((key) => {
-        if (Array.isArray(saved[key])) merged[key] = saved[key];
-      });
-      return merged as unknown as ShopData;
-    }
-  } catch (error) {
-    console.warn("Unable to load saved data, using seed data.", error);
-  }
-  return cloneData(seedData);
-}
+const LEGACY_STORAGE_KEYS = [
+  "techvault.data.v1",
+  "techvault.session.v1",
+  "techvault.accounts.v1",
+];
 
 interface StoreContextValue {
   data: ShopData;
@@ -85,340 +77,212 @@ interface StoreContextValue {
 const StoreContext = createContext<StoreContextValue | null>(null);
 
 export function DataProvider({ children }: { children: ReactNode }) {
-  const [data, setData] = useState<ShopData>(() => cloneData(seedData));
+  const { user, ready: authReady } = useAuth();
+  const [data, setData] = useState<ShopData>(emptyData);
   const [ready, setReady] = useState(false);
+  const queue = useRef<Promise<void>>(Promise.resolve());
 
-  useEffect(() => {
-    setData(loadData());
-    setReady(true);
-  }, []);
+  const load = useCallback(async () => {
+    const response = await fetch("/api/store", { cache: "no-store" });
 
-  useEffect(() => {
-    if (!ready) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    } catch (error) {
-      console.warn("Unable to persist data.", error);
+    if (response.status === 401) {
+      setData(emptyData);
+      return;
     }
-  }, [data, ready]);
 
-  const mutate = useCallback((updater: (draft: ShopData) => void) => {
-    setData((previous) => {
-      const draft = cloneData(previous);
-      updater(draft);
-      return draft;
-    });
+    if (!response.ok) {
+      throw new Error(`Unable to load shop data (${response.status})`);
+    }
+
+    const body = (await response.json()) as { data?: ShopData };
+    if (body.data) setData(body.data);
   }, []);
+
+  useEffect(() => {
+    try {
+      LEGACY_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+    } catch (error) {
+      console.warn("Unable to clear legacy browser data.", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!authReady) return;
+
+    if (!user) {
+      setData(emptyData);
+      setReady(true);
+      return;
+    }
+
+    let active = true;
+    setReady(false);
+
+    load()
+      .catch((error) => {
+        console.warn("Unable to load shop data.", error);
+      })
+      .finally(() => {
+        if (active) setReady(true);
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [authReady, user, load]);
+
+  const dispatch = useCallback(
+    (action: string, payload?: Record<string, unknown>) => {
+      queue.current = queue.current.then(async () => {
+        try {
+          const response = await fetch("/api/store", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action, payload }),
+          });
+
+          const body = (await response.json().catch(() => ({}))) as {
+            data?: ShopData;
+            error?: string;
+          };
+
+          if (!response.ok) {
+            console.warn(body.error ?? "Unable to update shop data.");
+            await load().catch(() => undefined);
+            return;
+          }
+
+          if (body.data) setData(body.data);
+        } catch (error) {
+          console.warn("Unable to reach the data service.", error);
+          await load().catch(() => undefined);
+        }
+      });
+    },
+    [load],
+  );
 
   const reset = useCallback(() => {
-    setData(cloneData(seedData));
-  }, []);
+    dispatch("reset");
+  }, [dispatch]);
 
   const deleteRecord = useCallback(
     (collection: CollectionKey, id: number | string) => {
-      mutate((draft) => {
-        const list = draft[collection] as unknown as {
-          id: number | string;
-        }[];
-        const filtered = list.filter((item) => String(item.id) !== String(id));
-        (
-          draft as unknown as Record<CollectionKey, { id: number | string }[]>
-        )[collection] = filtered;
-      });
+      dispatch("deleteRecord", { collection, id });
     },
-    [mutate],
+    [dispatch],
   );
 
   const saveProduct = useCallback(
     (draft: ProductDraft, id?: number | null) => {
-      mutate((next) => {
-        const status: ProductStatus =
-          draft.stock <= draft.minStock ? "low" : "active";
-        if (id != null) {
-          const product = next.products.find(
-            (item) => String(item.id) === String(id),
-          );
-          if (product) Object.assign(product, draft, { status });
-        } else {
-          next.products.push({ id: nextId(next.products), ...draft, status });
-        }
-      });
+      dispatch("saveProduct", { draft, id: id ?? null });
     },
-    [mutate],
+    [dispatch],
   );
 
   const saveCategory = useCallback(
     (draft: CategoryDraft, id?: number | null) => {
-      mutate((next) => {
-        if (id != null) {
-          const category = next.categories.find(
-            (item) => String(item.id) === String(id),
-          );
-          if (!category) return;
-          if (category.name !== draft.name) {
-            next.products.forEach((product) => {
-              if (product.category === category.name) {
-                product.category = draft.name;
-              }
-            });
-          }
-          category.name = draft.name;
-          category.description = draft.description;
-        } else {
-          next.categories.push({
-            id: nextId(next.categories),
-            ...draft,
-          });
-        }
-      });
+      dispatch("saveCategory", { draft, id: id ?? null });
     },
-    [mutate],
+    [dispatch],
   );
 
   const saveSupplier = useCallback(
     (draft: SupplierDraft, id?: number | null) => {
-      mutate((next) => {
-        if (id != null) {
-          const supplier = next.suppliers.find(
-            (item) => String(item.id) === String(id),
-          );
-          if (supplier) Object.assign(supplier, draft);
-        } else {
-          next.suppliers.push({
-            id: nextId(next.suppliers),
-            products: 0,
-            ...draft,
-          });
-        }
-      });
+      dispatch("saveSupplier", { draft, id: id ?? null });
     },
-    [mutate],
+    [dispatch],
   );
 
   const createPurchase = useCallback(
     (draft: PurchaseDraft) => {
-      mutate((next) => {
-        next.purchases.unshift({
-          id: nextPurchaseId(next.purchases),
-          ...draft,
-        });
-      });
+      dispatch("createPurchase", { draft });
     },
-    [mutate],
+    [dispatch],
   );
 
   const updatePurchase = useCallback(
     (id: string, draft: PurchaseDraft) => {
-      mutate((next) => {
-        const purchase = next.purchases.find((item) => item.id === id);
-        if (purchase) Object.assign(purchase, draft);
-      });
+      dispatch("updatePurchase", { id, draft });
     },
-    [mutate],
+    [dispatch],
   );
 
   const receivePurchase = useCallback(
     (id: string) => {
-      mutate((next) => {
-        const purchase = next.purchases.find((item) => item.id === id);
-        if (purchase) purchase.status = "received";
-      });
+      dispatch("receivePurchase", { id });
     },
-    [mutate],
+    [dispatch],
   );
 
   const createSale = useCallback(
     (draft: SaleDraft): string | null => {
-      const customer = data.customers.find((item) => item.id === draft.customerId);
-      const product = data.products.find((item) => item.id === draft.productId);
+      const customer = data.customers.find(
+        (item) => item.id === draft.customerId,
+      );
+      const product = data.products.find(
+        (item) => item.id === draft.productId,
+      );
+
       if (!customer || !product) return "Select a customer and product";
       if (draft.qty <= 0) return "Quantity must be greater than zero";
       if (product.stock < draft.qty) {
         return `Only ${product.stock} units of ${product.name} in stock`;
       }
 
-      mutate((next) => {
-        const nextCustomer = next.customers.find(
-          (item) => item.id === draft.customerId,
-        );
-        const nextProduct = next.products.find(
-          (item) => item.id === draft.productId,
-        );
-        if (!nextCustomer || !nextProduct) return;
-
-        const id = nextCode("INV-", next.sales);
-        const total = nextProduct.price * draft.qty;
-        nextProduct.stock -= draft.qty;
-        nextProduct.status =
-          nextProduct.stock <= nextProduct.minStock ? "low" : "active";
-        nextCustomer.orders += 1;
-        nextCustomer.spent += total;
-
-        next.sales.unshift({
-          id,
-          customer: nextCustomer.name,
-          date: draft.date || todayISO(),
-          items: draft.qty,
-          total,
-          status: "completed",
-          payment: draft.payment,
-        });
-        next.stockMovements.unshift({
-          id: nextId(next.stockMovements),
-          type: "out",
-          product: nextProduct.name,
-          qty: draft.qty,
-          ref: id,
-          date: draft.date || todayISO(),
-          user: "Admin",
-        });
-      });
-
+      dispatch("createSale", { draft });
       return null;
     },
-    [data.customers, data.products, mutate],
+    [data.customers, data.products, dispatch],
   );
 
   const refundSale = useCallback(
     (id: string) => {
-      mutate((next) => {
-        const sale = next.sales.find((item) => item.id === id);
-        if (sale) sale.status = "refunded";
-      });
+      dispatch("refundSale", { id });
     },
-    [mutate],
+    [dispatch],
   );
 
   const deleteSale = useCallback(
     (id: string) => {
-      mutate((next) => {
-        const sale = next.sales.find((item) => item.id === id);
-        if (!sale) return;
-
-        if (sale.status === "completed") {
-          const customer = next.customers.find(
-            (item) => item.name === sale.customer,
-          );
-          if (customer) {
-            customer.orders = Math.max(0, customer.orders - 1);
-            customer.spent = Math.max(0, customer.spent - sale.total);
-          }
-        }
-
-        const linkedMovements = next.stockMovements.filter(
-          (movement) => movement.ref === id,
-        );
-        if (sale.status === "completed") {
-          linkedMovements.forEach((movement) => {
-            const product = next.products.find(
-              (item) => item.name === movement.product,
-            );
-            if (!product) return;
-            product.stock = Math.max(
-              0,
-              product.stock + (movement.type === "out" ? movement.qty : -movement.qty),
-            );
-            product.status =
-              product.stock <= product.minStock ? "low" : "active";
-          });
-        }
-
-        next.stockMovements = next.stockMovements.filter(
-          (movement) => movement.ref !== id,
-        );
-        next.sales = next.sales.filter((saleItem) => saleItem.id !== id);
-      });
+      dispatch("deleteSale", { id });
     },
-    [mutate],
+    [dispatch],
   );
 
   const saveCustomer = useCallback(
     (draft: CustomerDraft, id?: number | null) => {
-      mutate((next) => {
-        if (id != null) {
-          const customer = next.customers.find(
-            (item) => String(item.id) === String(id),
-          );
-          if (!customer) return;
-          const oldName = customer.name;
-          Object.assign(customer, draft);
-          if (oldName !== draft.name) {
-            next.sales.forEach((sale) => {
-              if (sale.customer === oldName) sale.customer = draft.name;
-            });
-            next.warranties.forEach((warranty) => {
-              if (warranty.customer === oldName) warranty.customer = draft.name;
-            });
-          }
-        } else {
-          next.customers.push({
-            id: nextId(next.customers),
-            orders: 0,
-            spent: 0,
-            ...draft,
-          });
-        }
-      });
+      dispatch("saveCustomer", { draft, id: id ?? null });
     },
-    [mutate],
+    [dispatch],
   );
 
   const saveWarranty = useCallback(
     (draft: WarrantyDraft, id?: string | null) => {
-      mutate((next) => {
-        if (id != null) {
-          const warranty = next.warranties.find((item) => item.id === id);
-          if (warranty) Object.assign(warranty, draft);
-          return;
-        }
-        next.warranties.unshift({
-          id: nextCode("WR-", next.warranties),
-          status: "active",
-          ...draft,
-        });
-      });
+      dispatch("saveWarranty", { draft, id: id ?? null });
     },
-    [mutate],
+    [dispatch],
   );
 
   const claimWarranty = useCallback(
     (id: string) => {
-      mutate((next) => {
-        const warranty = next.warranties.find((item) => item.id === id);
-        if (warranty) warranty.status = "claimed";
-      });
+      dispatch("claimWarranty", { id });
     },
-    [mutate],
+    [dispatch],
   );
 
   const saveUser = useCallback(
     (draft: UserDraft, id?: number | null) => {
-      mutate((next) => {
-        if (id != null) {
-          const user = next.users.find(
-            (item) => String(item.id) === String(id),
-          );
-          if (user) Object.assign(user, draft);
-        } else {
-          next.users.push({
-            id: nextId(next.users),
-            lastLogin: "—",
-            ...draft,
-          });
-        }
-      });
+      dispatch("saveUser", { draft, id: id ?? null });
     },
-    [mutate],
+    [dispatch],
   );
 
   const toggleUserStatus = useCallback(
     (id: number) => {
-      mutate((next) => {
-        const user = next.users.find((item) => item.id === id);
-        if (user) user.status = user.status === "active" ? "inactive" : "active";
-      });
+      dispatch("toggleUserStatus", { id });
     },
-    [mutate],
+    [dispatch],
   );
 
   const recordStock = useCallback(
@@ -435,28 +299,10 @@ export function DataProvider({ children }: { children: ReactNode }) {
         return `Only ${product.stock} units of ${product.name} in stock`;
       }
 
-      mutate((next) => {
-        const nextProduct = next.products.find(
-          (item) => item.id === productId,
-        );
-        if (!nextProduct) return;
-        nextProduct.stock += type === "in" ? qty : -qty;
-        nextProduct.status =
-          nextProduct.stock <= nextProduct.minStock ? "low" : "active";
-        next.stockMovements.unshift({
-          id: nextId(next.stockMovements),
-          type,
-          product: nextProduct.name,
-          qty,
-          ref: ref || (type === "in" ? "MANUAL-IN" : "MANUAL-OUT"),
-          date: todayISO(),
-          user: "Admin",
-        });
-      });
-
+      dispatch("recordStock", { type, productId, qty, ref });
       return null;
     },
-    [data.products, mutate],
+    [data.products, dispatch],
   );
 
   const updateStockMovement = useCallback(
@@ -487,69 +333,17 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }
       }
 
-      mutate((next) => {
-        const nextMovement = next.stockMovements.find(
-          (item) => item.id === id,
-        );
-        if (!nextMovement) return;
-
-        const nextOldProduct = next.products.find(
-          (item) => item.name === movement.product,
-        );
-        if (nextOldProduct) {
-          nextOldProduct.stock -= oldEffect;
-          nextOldProduct.status =
-            nextOldProduct.stock <= nextOldProduct.minStock ? "low" : "active";
-        }
-
-        const nextProduct = next.products.find(
-          (item) => item.id === draft.productId,
-        );
-        if (!nextProduct) return;
-        nextProduct.stock += newEffect;
-        nextProduct.status =
-          nextProduct.stock <= nextProduct.minStock ? "low" : "active";
-
-        Object.assign(nextMovement, {
-          type: draft.type,
-          product: nextProduct.name,
-          qty: draft.qty,
-          ref: draft.ref || (draft.type === "in" ? "MANUAL-IN" : "MANUAL-OUT"),
-          date: draft.date || todayISO(),
-          user: draft.user || "Admin",
-        });
-      });
-
+      dispatch("updateStockMovement", { id, draft });
       return null;
     },
-    [data.products, data.stockMovements, mutate],
+    [data.products, data.stockMovements, dispatch],
   );
 
   const deleteStockMovement = useCallback(
     (id: number) => {
-      mutate((next) => {
-        const movement = next.stockMovements.find((item) => item.id === id);
-        if (!movement) return;
-
-        const product = next.products.find(
-          (item) => item.name === movement.product,
-        );
-        if (product) {
-          product.stock = Math.max(
-            0,
-            product.stock +
-              (movement.type === "in" ? -movement.qty : movement.qty),
-          );
-          product.status =
-            product.stock <= product.minStock ? "low" : "active";
-        }
-
-        next.stockMovements = next.stockMovements.filter(
-          (item) => item.id !== id,
-        );
-      });
+      dispatch("deleteStockMovement", { id });
     },
-    [mutate],
+    [dispatch],
   );
 
   return (

@@ -92,7 +92,7 @@ export function exportCsv(collection: string, rows: Record<string, unknown>[]) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `techvault-${collection}-${todayISO()}.csv`;
+  link.download = `sintech-${collection}-${todayISO()}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
