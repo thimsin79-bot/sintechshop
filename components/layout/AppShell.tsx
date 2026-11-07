@@ -11,22 +11,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   const router = useRouter();
   const { user, ready } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const isLogin = pathname === "/login";
+  const isAuthPage = pathname === "/login" || pathname === "/signup";
 
   useEffect(() => {
     setSidebarOpen(false);
   }, [pathname]);
 
   useEffect(() => {
-    if (!ready || isLogin) return;
+    if (!ready || isAuthPage) return;
     if (!user) router.replace("/login");
-  }, [ready, isLogin, user, router]);
+  }, [ready, isAuthPage, user, router]);
 
-  if (isLogin) return <>{children}</>;
+  if (isAuthPage) return <>{children}</>;
 
   if (!ready || !user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-slate-50">
+      <div className="flex h-screen items-center justify-center bg-transparent">
         <div className="flex flex-col items-center gap-3 text-slate-400">
           <i className="fas fa-circle-notch fa-spin text-2xl text-brand-500" />
           <p className="text-sm">Loading workspace...</p>

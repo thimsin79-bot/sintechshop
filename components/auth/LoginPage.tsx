@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormError } from "@/components/forms/FormError";
 import { DEMO_ACCOUNTS, useAuth } from "@/lib/auth";
@@ -39,7 +40,7 @@ export function LoginPage() {
 
   if (!ready || user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
+      <div className="flex min-h-screen items-center justify-center bg-transparent">
         <i
           className="fas fa-circle-notch fa-spin text-2xl text-brand-500"
           aria-label="Loading"
@@ -49,7 +50,7 @@ export function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-transparent">
       <main className="flex min-h-screen items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="fade-in text-center">
@@ -176,6 +177,16 @@ export function LoginPage() {
               Sign in
             </button>
           </form>
+
+          <p className="mt-6 text-center text-sm text-slate-500">
+            Don&apos;t have an account?{" "}
+            <Link
+              href="/signup"
+              className="font-medium text-brand-600 hover:text-brand-700"
+            >
+              Create one
+            </Link>
+          </p>
 
           <div className="mt-6 rounded-xl border border-brand-100 bg-brand-50/70 p-4">
             <div className="flex items-start justify-between gap-4">

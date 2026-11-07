@@ -321,6 +321,39 @@ export function validateLogin(form: LoginValues): FieldErrors<LoginValues> {
   return errors;
 }
 
+export interface SignupValues {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
+export function validateSignup(form: SignupValues): FieldErrors<SignupValues> {
+  const errors: FieldErrors<SignupValues> = {};
+
+  if (isBlank(form.name)) errors.name = "Full name is required";
+
+  if (isBlank(form.email)) {
+    errors.email = "Email is required";
+  } else if (!isValidEmail(form.email)) {
+    errors.email = "Enter a valid email address";
+  }
+
+  if (isBlank(form.password)) {
+    errors.password = "Password is required";
+  } else if (form.password.length < 6) {
+    errors.password = "Password must be at least 6 characters";
+  }
+
+  if (isBlank(form.confirmPassword)) {
+    errors.confirmPassword = "Confirm your password";
+  } else if (form.confirmPassword !== form.password) {
+    errors.confirmPassword = "Passwords do not match";
+  }
+
+  return errors;
+}
+
 export function validateStockMovement(
   form: StockMovementDraft,
   products: Product[],

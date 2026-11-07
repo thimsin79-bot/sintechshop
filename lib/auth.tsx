@@ -35,6 +35,7 @@ export const DEMO_ACCOUNTS: DemoAccount[] = [
 ];
 
 const SESSION_KEY = "techvault.session.v1";
+const ACCOUNTS_KEY = "techvault.accounts.v1";
 
 interface AuthContextValue {
   user: AuthUser | null;
@@ -44,10 +45,40 @@ interface AuthContextValue {
     password: string,
     remember: boolean,
   ) => string | null;
+  register: (name: string, email: string, password: string) => string | null;
   logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+function readAccounts(): DemoAccount[] {
+  try {
+    const raw = localStorage.getItem(ACCOUNTS_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((item): item is DemoAccount => {
+      if (!item || typeof item !== "object") return false;
+      const account = item as Partial<DemoAccount>;
+      return (
+        typeof account.name === "string" &&
+        typeof account.email === "string" &&
+        typeof account.password === "string" &&
+        typeof account.role === "string"
+      );
+    });
+  } catch (error) {
+    console.warn("Unable to read saved accounts.", error);
+    return [];
+  }
+}
+
+function findAccount(email: string): DemoAccount | undefined {
+  const normalized = email.trim().toLowerCase();
+  return [...DEMO_ACCOUNTS, ...readAccounts()].find(
+    (account) => account.email.toLowerCase() === normalized,
+  );
+}
 
 function readSession(): AuthUser | null {
   try {
@@ -80,9 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     (email: string, password: string, remember: boolean): string | null => {
-      const account = DEMO_ACCOUNTS.find(
-        (item) => item.email.toLowerCase() === email.trim().toLowerCase(),
-      );
+      const account = findAccount(email);
 
       if (!account) return "No account found with that email address";
       if (account.password !== password) return "Incorrect password";
@@ -108,6 +137,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  const register = useCallback(
+    (name: string, email: string, password: string): string | null => {
+      if (findAccount(email)) {
+        return "An account with this email already exists";
+      }
+
+      const account: DemoAccount = {
+        name: name.trim(),
+        email: email.trim(),
+        password,
+        role: "Sales Staff",
+      };
+
+      try {
+        localStorage.setItem(
+          ACCOUNTS_KEY,
+          JSON.stringify([...readAccounts(), account]),
+        );
+      } catch (error) {
+        console.warn("Unable to create account.", error);
+        return "Unable to create account. Please try again.";
+      }
+
+      const session: AuthUser = {
+        name: account.name,
+        email: account.email,
+        role: account.role,
+      };
+
+      try {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(session));
+        sessionStorage.removeItem(SESSION_KEY);
+      } catch (error) {
+        console.warn("Unable to persist session.", error);
+      }
+
+      setUser(session);
+      return null;
+    },
+    [],
+  );
+
   const logout = useCallback(() => {
     try {
       localStorage.removeItem(SESSION_KEY);
@@ -119,7 +190,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, ready, login, logout }}>
+    <AuthContext.Provider value={{ user, ready, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
