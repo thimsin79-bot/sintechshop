@@ -54,6 +54,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { key: "reports", label: "Reports", href: "/reports", icon: "fa-chart-bar" },
       { key: "users", label: "User Management", href: "/users", icon: "fa-user-cog" },
+      { key: "settings", label: "Settings", href: "/settings", icon: "fa-gear" },
     ],
   },
 ];
@@ -76,7 +77,6 @@ export const PAGE_META: Record<PageKey, { title: string; subtitle: string }> = {
 };
 
 export function pageKeyForPath(pathname: string): PageKey {
-  if (pathname === "/settings") return "settings";
   const item = NAV_ITEMS.find((navItem) => navItem.href === pathname);
   return item ? item.key : "dashboard";
 }
