@@ -61,8 +61,9 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
         <button
           type="button"
           className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
-          onClick={() => showToast("Settings are not available in this demo")}
+          onClick={() => router.push("/settings")}
           aria-label="Settings"
+          title="Settings"
         >
           <i className="fas fa-cog" />
         </button>

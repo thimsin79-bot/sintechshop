@@ -9,7 +9,8 @@ export type PageKey =
   | "customers"
   | "warranty"
   | "reports"
-  | "users";
+  | "users"
+  | "settings";
 
 export interface NavItem {
   key: PageKey;
@@ -53,6 +54,7 @@ export const NAV_SECTIONS: NavSection[] = [
     items: [
       { key: "reports", label: "Reports", href: "/reports", icon: "fa-chart-bar" },
       { key: "users", label: "User Management", href: "/users", icon: "fa-user-cog" },
+      { key: "settings", label: "Settings", href: "/settings", icon: "fa-gear" },
     ],
   },
 ];
@@ -71,6 +73,7 @@ export const PAGE_META: Record<PageKey, { title: string; subtitle: string }> = {
   warranty: { title: "Warranty Tracking", subtitle: "Serial numbers & claims" },
   reports: { title: "Reports", subtitle: "Analytics and exports" },
   users: { title: "User Management", subtitle: "Roles and access control" },
+  settings: { title: "Settings", subtitle: "Company profile and activity log" },
 };
 
 export function pageKeyForPath(pathname: string): PageKey {
