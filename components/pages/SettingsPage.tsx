@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { FormError } from "@/components/forms/FormError";
+import { DatabaseStatusCard } from "@/components/system/DatabaseStatus";
 import { useCompany } from "@/lib/company";
 import { useData } from "@/lib/store";
 import { useToast } from "@/lib/toast";
@@ -319,7 +320,9 @@ export function SettingsPage() {
           </div>
         </form>
 
-        <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+        <div className="space-y-6">
+          <DatabaseStatusCard />
+          <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
           <div className="flex items-start justify-between mb-4">
             <div>
               <h3 className="font-semibold text-slate-800">Activity Log</h3>
@@ -357,6 +360,7 @@ export function SettingsPage() {
             {!activity.length ? (
               <p className="text-sm text-slate-500">No activity yet.</p>
             ) : null}
+          </div>
           </div>
         </div>
       </div>

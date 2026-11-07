@@ -11,6 +11,7 @@ import {
 } from "@/lib/notifications";
 import { PAGE_META, pageKeyForPath } from "@/lib/navigation";
 import { useData } from "@/lib/store";
+import { DatabaseStatusPill } from "@/components/system/DatabaseStatus";
 
 const TONE_STYLES: Record<AppNotification["tone"], string> = {
   danger: "bg-rose-50 text-rose-600",
@@ -148,6 +149,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
             className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent w-64 bg-slate-50"
           />
         </form>
+        <DatabaseStatusPill className="hidden sm:inline-flex" />
         <div className="relative" ref={panelRef}>
           <button
             type="button"
