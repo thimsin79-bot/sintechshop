@@ -1,6 +1,7 @@
 "use client";
 
 import { Modal } from "@/components/ui/Modal";
+import { useCompany } from "@/lib/company";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Sale } from "@/lib/types";
 
@@ -15,24 +16,53 @@ export function SaleInvoiceModal({
   sale,
   onClose,
 }: SaleInvoiceModalProps) {
+  const { profile } = useCompany();
+
   if (!sale) return null;
+
+  const contactLine = [profile.email, profile.phone]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Modal open={open} onClose={onClose} printable className="max-w-2xl">
       <div className="p-8">
-        <div className="flex items-start justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-lg bg-brand-600 text-white flex items-center justify-center">
+        <div className="flex items-start justify-between gap-4 mb-6">
+          <div className="flex items-start gap-3 min-w-0">
+            {profile.logo ? (
+              <img
+                src={profile.logo}
+                alt={`${profile.name} logo`}
+                className="w-11 h-11 rounded-lg object-contain bg-white border border-slate-100 shrink-0"
+              />
+            ) : (
+              <div className="w-11 h-11 rounded-lg bg-brand-600 text-white flex items-center justify-center shrink-0">
                 <i className="fas fa-laptop" />
               </div>
-              <span className="font-bold text-lg">TechVault</span>
+            )}
+            <div className="min-w-0">
+              <p className="font-bold text-lg truncate">{profile.name}</p>
+              {profile.address ? (
+                <p className="text-xs text-slate-500 mt-1 whitespace-pre-line">
+                  {profile.address}
+                </p>
+              ) : null}
+              {contactLine ? (
+                <p className="text-xs text-slate-500 mt-1">{contactLine}</p>
+              ) : null}
+              {profile.website ? (
+                <p className="text-xs text-slate-500 mt-1">
+                  {profile.website}
+                </p>
+              ) : null}
+              {profile.taxId ? (
+                <p className="text-xs text-slate-500 mt-1">
+                  Tax ID: {profile.taxId}
+                </p>
+              ) : null}
             </div>
-            <p className="text-xs text-slate-500 mt-2">
-              Computer Shop Inventory
-            </p>
           </div>
-          <div className="text-right">
+          <div className="text-right shrink-0">
             <p className="text-xs text-slate-500 uppercase tracking-wide">
               Invoice
             </p>
@@ -77,7 +107,7 @@ export function SaleInvoiceModal({
           </div>
         </div>
         <p className="text-xs text-slate-400 mt-8 text-center">
-          Thank you for shopping with TechVault.
+          Thank you for shopping with {profile.name}.
         </p>
         <div className="no-print flex justify-end gap-3 pt-5">
           <button
