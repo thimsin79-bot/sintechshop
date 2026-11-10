@@ -787,37 +787,41 @@ async function updateStockMovement(
     const newEffect = draft.type === "in" ? draft.qty : -draft.qty;
 
     if (oldProduct && oldProduct.id === product.id) {
-      if (oldProduct.stock - oldEffect + newEffect < 0) {
+      const stock = oldProduct.stock - oldEffect + newEffect;
+      if (stock < 0) {
         throw new StoreError(
-          `Only ${oldProduct.stock + newEffect} units of ${product.name} in stock`,
+          `Only ${Math.max(oldProduct.stock - oldEffect, 0)} units of ${product.name} in stock`,
         );
       }
+      await tx.product.update({
+        where: { id: product.id },
+        data: { stock, status: productStatus(stock, product.minStock) },
+      });
     } else {
-      if (oldProduct && oldProduct.stock - oldEffect < 0) {
-        throw new StoreError(
-          `Only ${oldProduct.stock} units of ${oldProduct.name} in stock`,
-        );
+      if (oldProduct) {
+        const stock = oldProduct.stock - oldEffect;
+        if (stock < 0) {
+          throw new StoreError(
+            `Only ${Math.max(oldProduct.stock, 0)} units of ${oldProduct.name} in stock`,
+          );
+        }
+        await tx.product.update({
+          where: { id: oldProduct.id },
+          data: { stock, status: productStatus(stock, oldProduct.minStock) },
+        });
       }
-      if (product.stock + newEffect < 0) {
+
+      const stock = product.stock + newEffect;
+      if (stock < 0) {
         throw new StoreError(
           `Only ${product.stock} units of ${product.name} in stock`,
         );
       }
-    }
-
-    if (oldProduct) {
-      const stock = oldProduct.stock - oldEffect;
       await tx.product.update({
-        where: { id: oldProduct.id },
-        data: { stock, status: productStatus(stock, oldProduct.minStock) },
+        where: { id: product.id },
+        data: { stock, status: productStatus(stock, product.minStock) },
       });
     }
-
-    const stock = product.stock + newEffect;
-    await tx.product.update({
-      where: { id: product.id },
-      data: { stock, status: productStatus(stock, product.minStock) },
-    });
 
     await tx.stockMovement.update({
       where: { id },

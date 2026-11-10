@@ -50,6 +50,10 @@ function fromAuthEmail(email: string | null | undefined): string {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  INVALID_EMAIL_OR_PASSWORD:
+    "Incorrect username or password. Check your details or create an account.",
+  INVALID_PASSWORD: "Incorrect username or password.",
+  USER_NOT_FOUND: "No account found for that username. Create one instead.",
   USER_ALREADY_EXISTS: "That username is already taken. Try signing in instead.",
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
     "That username is already taken. Try signing in instead.",

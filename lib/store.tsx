@@ -321,12 +321,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
       const newEffect = draft.type === "in" ? draft.qty : -draft.qty;
 
       if (oldProduct && oldProduct.id === product.id) {
-        if (oldProduct.stock - oldEffect + newEffect < 0) {
-          return `Only ${oldProduct.stock + newEffect} units of ${product.name} in stock`;
+        const available = oldProduct.stock - oldEffect;
+        if (available + newEffect < 0) {
+          return `Only ${Math.max(available, 0)} units of ${product.name} in stock`;
         }
       } else {
         if (oldProduct && oldProduct.stock - oldEffect < 0) {
-          return `Only ${oldProduct.stock} units of ${oldProduct.name} in stock`;
+          return `Only ${Math.max(oldProduct.stock, 0)} units of ${oldProduct.name} in stock`;
         }
         if (product.stock + newEffect < 0) {
           return `Only ${product.stock} units of ${product.name} in stock`;
