@@ -13,7 +13,7 @@ import { authClient } from "./auth-client";
 export interface AuthUser {
   id: string;
   name: string;
-  email: string;
+  username: string;
   role: string;
 }
 
@@ -21,19 +21,74 @@ interface AuthContextValue {
   user: AuthUser | null;
   ready: boolean;
   login: (
-    email: string,
+    username: string,
     password: string,
     remember: boolean,
   ) => Promise<string | null>;
   register: (
-    name: string,
-    email: string,
+    username: string,
     password: string,
   ) => Promise<string | null>;
   logout: () => Promise<void>;
 }
 
+const USERNAME_DOMAIN = "@sintech.local";
+
+function toAuthEmail(identifier: string): string {
+  const value = identifier.trim().toLowerCase();
+  return value.includes("@") ? value : `${value}${USERNAME_DOMAIN}`;
+}
+
+function fromAuthEmail(email: string | null | undefined): string {
+  if (!email) return "";
+  const value = email.toLowerCase();
+  return value.endsWith(USERNAME_DOMAIN)
+    ? value.slice(0, -USERNAME_DOMAIN.length)
+    : value;
+}
+
 const AuthContext = createContext<AuthContextValue | null>(null);
+
+const AUTH_ERROR_MESSAGES: Record<string, string> = {
+  USER_ALREADY_EXISTS: "That username is already taken. Try signing in instead.",
+  USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
+    "That username is already taken. Try signing in instead.",
+  PASSWORD_TOO_SHORT: "Password must be at least 8 characters.",
+  INVALID_EMAIL: "Enter a valid username.",
+  EMAIL_NOT_VERIFIED:
+    "Your account is not verified yet. Contact an administrator.",
+};
+
+function authErrorMessage(error: unknown, fallback: string): string {
+  if (error && typeof error === "object") {
+    const candidate = error as {
+      code?: unknown;
+      message?: unknown;
+      error?: { code?: unknown; message?: unknown } | unknown;
+    };
+    const raw =
+      candidate.error && typeof candidate.error === "object"
+        ? (candidate.error as { code?: unknown; message?: unknown })
+        : undefined;
+    const code =
+      typeof raw?.code === "string"
+        ? raw.code
+        : typeof candidate.code === "string"
+          ? candidate.code
+          : "";
+    const message =
+      typeof raw?.message === "string" && raw.message.trim()
+        ? raw.message
+        : typeof candidate.message === "string" && candidate.message.trim()
+          ? candidate.message
+          : "";
+
+    if (code && AUTH_ERROR_MESSAGES[code]) return AUTH_ERROR_MESSAGES[code];
+    if (message) return message;
+  }
+
+  return fallback;
+}
 
 function toAuthUser(user: {
   id?: string;
@@ -41,10 +96,11 @@ function toAuthUser(user: {
   email?: string | null;
   role?: string | null;
 }): AuthUser {
+  const username = fromAuthEmail(user.email);
   return {
     id: user.id ?? "",
-    name: user.name || user.email || "User",
-    email: user.email ?? "",
+    name: user.name || username || "User",
+    username,
     role: user.role || "Sales Staff",
   };
 }
@@ -72,18 +128,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = useCallback(
     async (
-      email: string,
+      username: string,
       password: string,
       remember: boolean,
     ): Promise<string | null> => {
-      const result = await authClient.signIn.email({
-        email: email.trim(),
-        password,
-        rememberMe: remember,
-      });
+      try {
+        const result = await authClient.signIn.email({
+          email: toAuthEmail(username),
+          password,
+          rememberMe: remember,
+        });
 
-      if (result.error) {
-        return result.error.message || "Incorrect email or password";
+        if (result.error) {
+          return authErrorMessage(
+            result.error,
+            "Incorrect username or password",
+          );
+        }
+      } catch (error) {
+        return authErrorMessage(
+          error,
+          "Unable to sign in. Please try again.",
+        );
       }
 
       await refresh();
@@ -94,32 +160,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(
     async (
-      name: string,
-      email: string,
+      username: string,
       password: string,
     ): Promise<string | null> => {
-      const result = await authClient.signUp.email({
-        name: name.trim(),
-        email: email.trim(),
-        password,
-      });
+      const authEmail = toAuthEmail(username);
 
-      if (result.error) {
-        return result.error.message || "Unable to create account";
-      }
-
-      const session = await authClient.getSession();
-      if (!session.data?.user) {
-        const signIn = await authClient.signIn.email({
-          email: email.trim(),
+      try {
+        const result = await authClient.signUp.email({
+          name: username.trim(),
+          email: authEmail,
           password,
         });
-        if (signIn.error) {
-          return (
-            signIn.error.message ||
-            "Account created. Check your email to verify it, then sign in."
-          );
+
+        if (result.error) {
+          return authErrorMessage(result.error, "Unable to create account");
         }
+      } catch (error) {
+        return authErrorMessage(
+          error,
+          "Unable to create account. Please try again.",
+        );
+      }
+
+      try {
+        const session = await authClient.getSession();
+        if (!session.data?.user) {
+          const signIn = await authClient.signIn.email({
+            email: authEmail,
+            password,
+          });
+          if (signIn.error) {
+            return authErrorMessage(
+              signIn.error,
+              "Account created. Check your email to verify it, then sign in.",
+            );
+          }
+        }
+      } catch (error) {
+        return authErrorMessage(
+          error,
+          "Account created, but we could not start your session. Please sign in.",
+        );
       }
 
       await refresh();

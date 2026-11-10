@@ -6,7 +6,7 @@ Application data is stored in Neon Postgres through Prisma, and accounts are man
 
 ## Features
 
-- Email/password authentication with Neon Auth (sign up, sign in, sign out, session persistence)
+- Username/password authentication with Neon Auth (sign up, sign in, sign out, session persistence)
 - Protected application routes and authenticated API access
 - Dashboard with sales overview, low-stock alerts, inventory value, recent sales, and recent stock movements
 - Live dashboard search across products, customers, invoices, warranties, and purchase orders
@@ -193,6 +193,7 @@ legacy/                   Original standalone HTML/CSS/JS implementation
 ## Data and Persistence
 
 - Accounts and sessions are managed by Neon Auth. The browser talks to the Next.js auth handler at `/api/auth/*`, which proxies requests to your Managed Better Auth instance.
+- Sign-up and sign-in use a username and password only. The client maps each username to an internal `<username>@sintech.local` identifier because Neon Auth requires an email-shaped identifier. Existing email-based accounts can still sign in by entering their full email in the username field.
 - Shop data is stored in Neon Postgres using the normalized schema in `prisma/schema.prisma`.
 - `lib/server/store.ts` reads the full dataset into the client shape and executes every mutation in a database transaction.
 - The browser loads data with `GET /api/store` after sign-in and sends mutations to `POST /api/store` as `{ action, payload }`.

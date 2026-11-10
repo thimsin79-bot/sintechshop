@@ -298,57 +298,53 @@ export function validateSale(
   return errors;
 }
 
+export function isValidUsername(value: string): boolean {
+  return /^[a-zA-Z0-9][a-zA-Z0-9._-]{2,31}$/.test(value.trim());
+}
+
 export interface LoginValues {
-  email: string;
+  username: string;
   password: string;
 }
 
 export function validateLogin(form: LoginValues): FieldErrors<LoginValues> {
   const errors: FieldErrors<LoginValues> = {};
 
-  if (isBlank(form.email)) {
-    errors.email = "Email is required";
-  } else if (!isValidEmail(form.email)) {
-    errors.email = "Enter a valid email address";
+  const identifier = form.username.trim();
+  if (isBlank(identifier)) {
+    errors.username = "Username is required";
+  } else if (!isValidUsername(identifier) && !isValidEmail(identifier)) {
+    errors.username = "Enter a valid username";
   }
 
   if (isBlank(form.password)) {
     errors.password = "Password is required";
-  } else if (form.password.length < 6) {
-    errors.password = "Password must be at least 6 characters";
+  } else if (form.password.length < 8) {
+    errors.password = "Password must be at least 8 characters";
   }
 
   return errors;
 }
 
 export interface SignupValues {
-  name: string;
-  email: string;
+  username: string;
   password: string;
-  confirmPassword: string;
 }
 
 export function validateSignup(form: SignupValues): FieldErrors<SignupValues> {
   const errors: FieldErrors<SignupValues> = {};
 
-  if (isBlank(form.name)) errors.name = "Full name is required";
-
-  if (isBlank(form.email)) {
-    errors.email = "Email is required";
-  } else if (!isValidEmail(form.email)) {
-    errors.email = "Enter a valid email address";
+  if (isBlank(form.username)) {
+    errors.username = "Username is required";
+  } else if (!isValidUsername(form.username)) {
+    errors.username =
+      "Use 3-32 letters, numbers, dots, dashes or underscores";
   }
 
   if (isBlank(form.password)) {
     errors.password = "Password is required";
-  } else if (form.password.length < 6) {
-    errors.password = "Password must be at least 6 characters";
-  }
-
-  if (isBlank(form.confirmPassword)) {
-    errors.confirmPassword = "Confirm your password";
-  } else if (form.confirmPassword !== form.password) {
-    errors.confirmPassword = "Passwords do not match";
+  } else if (form.password.length < 8) {
+    errors.password = "Password must be at least 8 characters";
   }
 
   return errors;

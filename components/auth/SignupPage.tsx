@@ -21,7 +21,7 @@ export function SignupPage() {
   const [submitting, setSubmitting] = useState(false);
   const { values, errors, formError, setValue, setFormError, submit } =
     useForm<SignupValues>(
-      { name: "", email: "", password: "", confirmPassword: "" },
+      { username: "", password: "" },
       validateSignup,
     );
 
@@ -32,7 +32,7 @@ export function SignupPage() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     submit(event, (draft) => {
       setSubmitting(true);
-      void register(draft.name, draft.email, draft.password)
+      void register(draft.username, draft.password)
         .then((error) => {
           if (error) {
             setFormError(error);
@@ -41,7 +41,13 @@ export function SignupPage() {
           showToast("Account created successfully");
           router.replace("/");
         })
-        .catch(() => setFormError("Unable to create account. Please try again."))
+        .catch((error: unknown) =>
+          setFormError(
+            error instanceof Error && error.message
+              ? error.message
+              : "Unable to create account. Please try again.",
+          ),
+        )
         .finally(() => setSubmitting(false));
     });
   }
@@ -79,73 +85,46 @@ export function SignupPage() {
 
           <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
             <div>
-              <label htmlFor="signup-name" className={labelClass}>
-                Full name
+              <label htmlFor="signup-username" className={labelClass}>
+                Username
               </label>
               <div className="relative">
                 <i className="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
                 <input
-                  id="signup-name"
+                  id="signup-username"
                   type="text"
-                  autoComplete="name"
-                  value={values.name}
-                  onChange={(event) => setValue("name", event.target.value)}
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={values.username}
+                  onChange={(event) =>
+                    setValue("username", event.target.value)
+                  }
                   className={cn(
                     inputClass,
                     "pl-10",
-                    errors.name && invalidInputClass,
+                    errors.username && invalidInputClass,
                   )}
-                  aria-invalid={errors.name ? true : undefined}
+                  aria-invalid={errors.username ? true : undefined}
                   aria-describedby={
-                    errors.name ? "signup-name-error" : undefined
+                    errors.username ? "signup-username-error" : undefined
                   }
-                  placeholder="Jane Doe"
+                  placeholder="Choose a username"
                 />
               </div>
-              {errors.name ? (
+              {errors.username ? (
                 <p
-                  id="signup-name-error"
+                  id="signup-username-error"
                   role="alert"
                   className="mt-1 text-xs text-rose-600"
                 >
-                  {errors.name}
+                  {errors.username}
                 </p>
-              ) : null}
-            </div>
-
-            <div>
-              <label htmlFor="signup-email" className={labelClass}>
-                Email address
-              </label>
-              <div className="relative">
-                <i className="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
-                <input
-                  id="signup-email"
-                  type="email"
-                  autoComplete="email"
-                  value={values.email}
-                  onChange={(event) => setValue("email", event.target.value)}
-                  className={cn(
-                    inputClass,
-                    "pl-10",
-                    errors.email && invalidInputClass,
-                  )}
-                  aria-invalid={errors.email ? true : undefined}
-                  aria-describedby={
-                    errors.email ? "signup-email-error" : undefined
-                  }
-                  placeholder="you@sintech.com"
-                />
-              </div>
-              {errors.email ? (
-                <p
-                  id="signup-email-error"
-                  role="alert"
-                  className="mt-1 text-xs text-rose-600"
-                >
-                  {errors.email}
+              ) : (
+                <p className="mt-1 text-xs text-slate-400">
+                  Letters, numbers, dots, dashes and underscores
                 </p>
-              ) : null}
+              )}
             </div>
 
             <div>
@@ -171,7 +150,7 @@ export function SignupPage() {
                   aria-describedby={
                     errors.password ? "signup-password-error" : undefined
                   }
-                  placeholder="At least 6 characters"
+                  placeholder="At least 8 characters"
                 />
                 <button
                   type="button"
@@ -193,45 +172,6 @@ export function SignupPage() {
                   className="mt-1 text-xs text-rose-600"
                 >
                   {errors.password}
-                </p>
-              ) : null}
-            </div>
-
-            <div>
-              <label htmlFor="signup-confirm" className={labelClass}>
-                Confirm password
-              </label>
-              <div className="relative">
-                <i className="fas fa-lock absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
-                <input
-                  id="signup-confirm"
-                  type={showPassword ? "text" : "password"}
-                  autoComplete="new-password"
-                  value={values.confirmPassword}
-                  onChange={(event) =>
-                    setValue("confirmPassword", event.target.value)
-                  }
-                  className={cn(
-                    inputClass,
-                    "pl-10",
-                    errors.confirmPassword && invalidInputClass,
-                  )}
-                  aria-invalid={errors.confirmPassword ? true : undefined}
-                  aria-describedby={
-                    errors.confirmPassword
-                      ? "signup-confirm-error"
-                      : undefined
-                  }
-                  placeholder="Repeat your password"
-                />
-              </div>
-              {errors.confirmPassword ? (
-                <p
-                  id="signup-confirm-error"
-                  role="alert"
-                  className="mt-1 text-xs text-rose-600"
-                >
-                  {errors.confirmPassword}
                 </p>
               ) : null}
             </div>

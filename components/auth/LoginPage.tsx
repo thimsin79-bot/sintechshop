@@ -21,7 +21,7 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const { values, errors, formError, setValue, setFormError, submit } =
-    useForm<LoginValues>({ email: "", password: "" }, validateLogin);
+    useForm<LoginValues>({ username: "", password: "" }, validateLogin);
 
   useEffect(() => {
     if (ready && user) router.replace("/");
@@ -30,7 +30,7 @@ export function LoginPage() {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     submit(event, (draft) => {
       setSubmitting(true);
-      void login(draft.email, draft.password, remember)
+      void login(draft.username, draft.password, remember)
         .then((error) => {
           if (error) {
             setFormError(error);
@@ -39,7 +39,13 @@ export function LoginPage() {
           showToast("Signed in successfully");
           router.replace("/");
         })
-        .catch(() => setFormError("Unable to sign in. Please try again."))
+        .catch((error: unknown) =>
+          setFormError(
+            error instanceof Error && error.message
+              ? error.message
+              : "Unable to sign in. Please try again.",
+          ),
+        )
         .finally(() => setSubmitting(false));
     });
   }
@@ -74,36 +80,40 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit} noValidate className="mt-8 space-y-5">
             <div>
-              <label htmlFor="login-email" className={labelClass}>
-                Email address
+              <label htmlFor="login-username" className={labelClass}>
+                Username
               </label>
               <div className="relative">
-                <i className="fas fa-envelope absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
+                <i className="fas fa-user absolute left-3 top-1/2 -translate-y-1/2 text-sm text-slate-400" />
                 <input
-                  id="login-email"
-                  type="email"
-                  autoComplete="email"
-                  value={values.email}
-                  onChange={(event) => setValue("email", event.target.value)}
+                  id="login-username"
+                  type="text"
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  spellCheck={false}
+                  value={values.username}
+                  onChange={(event) =>
+                    setValue("username", event.target.value)
+                  }
                   className={cn(
                     inputClass,
                     "pl-10",
-                    errors.email && invalidInputClass,
+                    errors.username && invalidInputClass,
                   )}
-                  aria-invalid={errors.email ? true : undefined}
+                  aria-invalid={errors.username ? true : undefined}
                   aria-describedby={
-                    errors.email ? "login-email-error" : undefined
+                    errors.username ? "login-username-error" : undefined
                   }
-                  placeholder="you@sintech.com"
+                  placeholder="Enter your username"
                 />
               </div>
-              {errors.email ? (
+              {errors.username ? (
                 <p
-                  id="login-email-error"
+                  id="login-username-error"
                   role="alert"
                   className="mt-1 text-xs text-rose-600"
                 >
-                  {errors.email}
+                  {errors.username}
                 </p>
               ) : null}
             </div>

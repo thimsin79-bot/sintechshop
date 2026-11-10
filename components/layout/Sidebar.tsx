@@ -89,7 +89,7 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
               {user?.name ?? "Admin User"}
             </p>
             <p className="text-xs text-slate-500 truncate" title={user?.role}>
-              {user?.email ?? "admin@sintech.com"}
+              {user?.username ?? "admin"}
             </p>
           </div>
           <button
