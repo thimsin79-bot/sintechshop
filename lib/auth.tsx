@@ -54,6 +54,8 @@ const AUTH_ERROR_MESSAGES: Record<string, string> = {
   USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL:
     "That username is already taken. Try signing in instead.",
   PASSWORD_TOO_SHORT: "Password must be at least 8 characters.",
+  INVALID_ORIGIN:
+    "Sign-in is not allowed from this domain. Contact an administrator.",
   INVALID_EMAIL: "Enter a valid username.",
   EMAIL_NOT_VERIFIED:
     "Your account is not verified yet. Contact an administrator.",

@@ -194,6 +194,7 @@ legacy/                   Original standalone HTML/CSS/JS implementation
 
 - Accounts and sessions are managed by Neon Auth. The browser talks to the Next.js auth handler at `/api/auth/*`, which proxies requests to your Managed Better Auth instance.
 - Sign-up and sign-in use a username and password only. The client maps each username to an internal `<username>@sintech.local` identifier because Neon Auth requires an email-shaped identifier. Existing email-based accounts can still sign in by entering their full email in the username field.
+- `proxy.ts` rewrites the `Origin` header of same-origin `/api/auth/*` requests to the Neon Auth origin. This prevents `Invalid origin` errors on Vercel previews and custom domains while still rejecting cross-origin requests. Production domains can also be added under Neon Auth trusted domains for centralized control.
 - Shop data is stored in Neon Postgres using the normalized schema in `prisma/schema.prisma`.
 - `lib/server/store.ts` reads the full dataset into the client shape and executes every mutation in a database transaction.
 - The browser loads data with `GET /api/store` after sign-in and sends mutations to `POST /api/store` as `{ action, payload }`.
