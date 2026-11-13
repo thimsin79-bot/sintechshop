@@ -2,7 +2,7 @@
 
 import { Modal } from "@/components/ui/Modal";
 import { ModalHeader } from "@/components/ui/ModalHeader";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { Purchase } from "@/lib/types";
 
 interface PurchaseViewModalProps {
@@ -30,7 +30,6 @@ export function PurchaseViewModal({
         />
         <div className="space-y-3 text-sm">
           <Row label="Supplier" value={purchase.supplier} />
-          <Row label="Date" value={formatDate(purchase.date)} />
           <Row label="Items" value={String(purchase.items)} />
           <Row label="Total" value={formatCurrency(purchase.total)} strong />
           <div className="flex justify-between">

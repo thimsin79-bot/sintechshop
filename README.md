@@ -16,7 +16,7 @@ Application data is stored in Neon Postgres through Prisma, and accounts are man
 - Purchase orders with receiving status
 - Sales and invoices with printable invoice view and refund status
 - Customer management with order history
-- Warranty registration, claims, and expiry tracking
+- Warranty registration and claims
 - Reports with category chart, sales metrics, and CSV exports
 - User management with active/inactive status and role assignment
 - Reset-to-demo-data action backed by a database transaction

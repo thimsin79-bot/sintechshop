@@ -9,7 +9,6 @@ export async function GET() {
         status: "disconnected",
         latencyMs: null,
         message: "DATABASE_URL is not configured.",
-        checkedAt: new Date().toISOString(),
       },
       { status: 503 },
     );
@@ -25,7 +24,6 @@ export async function GET() {
       status: "connected",
       latencyMs: Date.now() - startedAt,
       message: "Database connection is healthy.",
-      checkedAt: new Date().toISOString(),
     });
   } catch (error) {
     console.error("Database health check failed", error);
@@ -34,7 +32,6 @@ export async function GET() {
         status: "disconnected",
         latencyMs: null,
         message: "Unable to reach the database.",
-        checkedAt: new Date().toISOString(),
       },
       { status: 503 },
     );

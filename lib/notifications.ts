@@ -49,14 +49,6 @@ export function saveNotificationState(state: NotificationState) {
   }
 }
 
-function daysUntil(value: string): number | null {
-  const target = new Date(`${value}T00:00:00`);
-  if (Number.isNaN(target.getTime())) return null;
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Math.round((target.getTime() - today.getTime()) / 86_400_000);
-}
-
 export function buildNotifications(data: ShopData): AppNotification[] {
   const items: AppNotification[] = [];
 
@@ -96,26 +88,6 @@ export function buildNotifications(data: ShopData): AppNotification[] {
       icon: "fa-truck",
       tone: "info",
       order: 3,
-    });
-  });
-
-  data.warranties.forEach((warranty) => {
-    if (warranty.status !== "active") return;
-    const days = daysUntil(warranty.expiry);
-    if (days === null || days > 30) return;
-    const expired = days < 0;
-    items.push({
-      id: `warranty-${warranty.id}`,
-      title: expired
-        ? `Warranty expired: ${warranty.product}`
-        : `Warranty expiring: ${warranty.product}`,
-      detail: `${warranty.customer} · ${
-        expired ? `${Math.abs(days)} days overdue` : `${days} days left`
-      }`,
-      href: "/warranty",
-      icon: "fa-shield-alt",
-      tone: expired ? "danger" : "warning",
-      order: expired ? 1 : 4,
     });
   });
 

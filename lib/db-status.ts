@@ -11,14 +11,12 @@ export interface DatabaseStatus {
   status: DatabaseConnectionState;
   latencyMs: number | null;
   message: string;
-  checkedAt: string | null;
 }
 
 const INITIAL_STATUS: DatabaseStatus = {
   status: "checking",
   latencyMs: null,
   message: "Checking database connection...",
-  checkedAt: null,
 };
 
 export function useDatabaseStatus(intervalMs = 30000) {
@@ -39,8 +37,6 @@ export function useDatabaseStatus(intervalMs = 30000) {
         latencyMs:
           typeof payload.latencyMs === "number" ? payload.latencyMs : null,
         message: typeof payload.message === "string" ? payload.message : "",
-        checkedAt:
-          typeof payload.checkedAt === "string" ? payload.checkedAt : null,
       });
     } catch {
       if (!mounted.current) return;
@@ -48,7 +44,6 @@ export function useDatabaseStatus(intervalMs = 30000) {
         status: "disconnected",
         latencyMs: null,
         message: "Unable to reach the status endpoint.",
-        checkedAt: new Date().toISOString(),
       });
     }
   }, []);

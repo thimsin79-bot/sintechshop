@@ -9,7 +9,7 @@ import { useData } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { usePagination } from "@/lib/pagination";
 import { primaryButton } from "@/lib/styles";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { Purchase } from "@/lib/types";
 
 export function PurchasingPage() {
@@ -60,7 +60,6 @@ export function PurchasingPage() {
               <tr className="text-left">
                 <th className="px-5 py-3.5 font-medium">PO Number</th>
                 <th className="px-5 py-3.5 font-medium">Supplier</th>
-                <th className="px-5 py-3.5 font-medium">Date</th>
                 <th className="px-5 py-3.5 font-medium">Items</th>
                 <th className="px-5 py-3.5 font-medium">Total</th>
                 <th className="px-5 py-3.5 font-medium">Status</th>
@@ -77,7 +76,6 @@ export function PurchasingPage() {
                     {purchase.id}
                   </td>
                   <td className="px-5 py-3.5">{purchase.supplier}</td>
-                  <td className="px-5 py-3.5">{formatDate(purchase.date)}</td>
                   <td className="px-5 py-3.5">{purchase.items}</td>
                   <td className="px-5 py-3.5 font-semibold">
                     {formatCurrency(purchase.total)}
@@ -134,7 +132,7 @@ export function PurchasingPage() {
               {!data.purchases.length ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="px-5 py-10 text-center text-slate-500"
                   >
                     No purchase orders yet

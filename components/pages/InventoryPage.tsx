@@ -7,7 +7,6 @@ import { Pagination } from "@/components/ui/Pagination";
 import { useData } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { usePagination } from "@/lib/pagination";
-import { formatDate } from "@/lib/utils";
 import type { StockMovement, StockMovementType } from "@/lib/types";
 
 export function InventoryPage() {
@@ -101,7 +100,6 @@ export function InventoryPage() {
                 <th className="px-5 py-3.5 font-medium">Product</th>
                 <th className="px-5 py-3.5 font-medium">Qty</th>
                 <th className="px-5 py-3.5 font-medium">Reference</th>
-                <th className="px-5 py-3.5 font-medium">Date</th>
                 <th className="px-5 py-3.5 font-medium">User</th>
                 <th className="px-5 py-3.5 font-medium text-right">Actions</th>
               </tr>
@@ -144,7 +142,6 @@ export function InventoryPage() {
                   <td className="px-5 py-3.5 text-brand-600">
                     {movement.ref}
                   </td>
-                  <td className="px-5 py-3.5">{formatDate(movement.date)}</td>
                   <td className="px-5 py-3.5">{movement.user}</td>
                   <td className="px-5 py-3.5 text-right whitespace-nowrap">
                     <button
@@ -169,7 +166,7 @@ export function InventoryPage() {
               {!filtered.length ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={6}
                     className="px-5 py-10 text-center text-slate-500"
                   >
                     No stock movements match your search.

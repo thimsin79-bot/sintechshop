@@ -11,7 +11,6 @@ import { useToast } from "@/lib/toast";
 import { useForm } from "@/lib/useForm";
 import { validateStockMovement } from "@/lib/validation";
 import { inputClass } from "@/lib/styles";
-import { todayISO } from "@/lib/utils";
 import type {
   StockMovement,
   StockMovementDraft,
@@ -30,7 +29,6 @@ interface StockForm {
   productId: number;
   qty: number;
   ref: string;
-  date: string;
   user: string;
   notes: string;
 }
@@ -50,7 +48,6 @@ export function StockModal({
         productId: data.products[0]?.id ?? 0,
         qty: 1,
         ref: "",
-        date: todayISO(),
         user: "Admin",
         notes: "",
       },
@@ -61,7 +58,6 @@ export function StockModal({
             productId: draft.productId,
             qty: draft.qty,
             ref: draft.ref,
-            date: draft.date,
             user: draft.user,
           },
           data.products,
@@ -83,7 +79,6 @@ export function StockModal({
         productId: product?.id ?? data.products[0]?.id ?? 0,
         qty: movement.qty,
         ref: movement.ref,
-        date: movement.date,
         user: movement.user,
         notes: "",
       });
@@ -94,7 +89,6 @@ export function StockModal({
       productId: data.products[0]?.id ?? 0,
       qty: 1,
       ref: "",
-      date: todayISO(),
       user: "Admin",
       notes: "",
     });
@@ -107,7 +101,6 @@ export function StockModal({
         productId: draft.productId,
         qty: draft.qty,
         ref: draft.ref,
-        date: draft.date,
         user: draft.user,
       };
       const error =
@@ -196,24 +189,14 @@ export function StockModal({
             </FormField>
           </div>
           {isEdit ? (
-            <div className="grid grid-cols-2 gap-4">
-              <FormField label="Date" required error={errors.date}>
-                <input
-                  type="date"
-                  value={values.date}
-                  onChange={(event) => setValue("date", event.target.value)}
-                  className={inputClass}
-                />
-              </FormField>
-              <FormField label="User">
-                <input
-                  value={values.user}
-                  onChange={(event) => setValue("user", event.target.value)}
-                  className={inputClass}
-                  placeholder="Admin"
-                />
-              </FormField>
-            </div>
+            <FormField label="User">
+              <input
+                value={values.user}
+                onChange={(event) => setValue("user", event.target.value)}
+                className={inputClass}
+                placeholder="Admin"
+              />
+            </FormField>
           ) : null}
           <FormField label="Notes">
             <textarea

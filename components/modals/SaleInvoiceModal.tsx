@@ -2,7 +2,7 @@
 
 import { Modal } from "@/components/ui/Modal";
 import { useCompany } from "@/lib/company";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { Sale } from "@/lib/types";
 
 interface SaleInvoiceModalProps {
@@ -67,9 +67,6 @@ export function SaleInvoiceModal({
               Invoice
             </p>
             <p className="font-bold">{sale.id}</p>
-            <p className="text-xs text-slate-500 mt-1">
-              {formatDate(sale.date)}
-            </p>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4 text-sm border-t border-b border-slate-100 py-4 mb-4">

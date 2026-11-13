@@ -9,7 +9,6 @@ import { useData } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { usePagination } from "@/lib/pagination";
 import { primaryButton } from "@/lib/styles";
-import { formatDate } from "@/lib/utils";
 import type { Warranty } from "@/lib/types";
 
 export function WarrantyPage() {
@@ -61,8 +60,6 @@ export function WarrantyPage() {
                 <th className="px-5 py-3.5 font-medium">Warranty ID</th>
                 <th className="px-5 py-3.5 font-medium">Product / Serial</th>
                 <th className="px-5 py-3.5 font-medium">Customer</th>
-                <th className="px-5 py-3.5 font-medium">Purchase</th>
-                <th className="px-5 py-3.5 font-medium">Expiry</th>
                 <th className="px-5 py-3.5 font-medium">Status</th>
                 <th className="px-5 py-3.5 font-medium text-right">Actions</th>
               </tr>
@@ -83,10 +80,6 @@ export function WarrantyPage() {
                     </div>
                   </td>
                   <td className="px-5 py-3.5">{warranty.customer}</td>
-                  <td className="px-5 py-3.5">
-                    {formatDate(warranty.purchaseDate)}
-                  </td>
-                  <td className="px-5 py-3.5">{formatDate(warranty.expiry)}</td>
                   <td className="px-5 py-3.5">
                     <span
                       className={`badge ${
@@ -137,7 +130,7 @@ export function WarrantyPage() {
               {!data.warranties.length ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={5}
                     className="px-5 py-10 text-center text-slate-500"
                   >
                     No warranty records yet

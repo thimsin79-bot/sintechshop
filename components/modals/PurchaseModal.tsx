@@ -11,7 +11,7 @@ import { useToast } from "@/lib/toast";
 import { useForm } from "@/lib/useForm";
 import { validatePurchase } from "@/lib/validation";
 import { inputClass } from "@/lib/styles";
-import { nextPurchaseId, todayISO } from "@/lib/utils";
+import { nextPurchaseId } from "@/lib/utils";
 import type { Purchase, PurchaseDraft, PurchaseStatus } from "@/lib/types";
 
 interface PurchaseModalProps {
@@ -37,7 +37,6 @@ export function PurchaseModal({
         supplier:
           data.suppliers.find((supplier) => supplier.status === "active")
             ?.name ?? "",
-        date: todayISO(),
         items: 1,
         total: 0,
         status: "ordered",
@@ -51,7 +50,6 @@ export function PurchaseModal({
       purchase
         ? {
             supplier: purchase.supplier,
-            date: purchase.date,
             items: purchase.items,
             total: purchase.total,
             status: purchase.status,
@@ -60,7 +58,6 @@ export function PurchaseModal({
             supplier:
               data.suppliers.find((supplier) => supplier.status === "active")
                 ?.name ?? "",
-            date: todayISO(),
             items: 1,
             total: 0,
             status: "ordered",
@@ -107,32 +104,19 @@ export function PurchaseModal({
               )}
             </select>
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
-            <FormField label="Order Date" required error={errors.date}>
-              <input
-                type="date"
-                value={values.date}
-                onChange={(event) => setValue("date", event.target.value)}
-                className={inputClass}
-              />
-            </FormField>
-            <FormField label="Status">
-              <select
-                value={values.status}
-                onChange={(event) =>
-                  setValue(
-                    "status",
-                    event.target.value as PurchaseStatus,
-                  )
-                }
-                className={inputClass}
-              >
-                <option value="ordered">Ordered</option>
-                <option value="partial">Partial</option>
-                <option value="received">Received</option>
-              </select>
-            </FormField>
-          </div>
+          <FormField label="Status">
+            <select
+              value={values.status}
+              onChange={(event) =>
+                setValue("status", event.target.value as PurchaseStatus)
+              }
+              className={inputClass}
+            >
+              <option value="ordered">Ordered</option>
+              <option value="partial">Partial</option>
+              <option value="received">Received</option>
+            </select>
+          </FormField>
           <div className="grid grid-cols-2 gap-4">
             <FormField label="Items" error={errors.items}>
               <input

@@ -12,8 +12,6 @@ model Category {
   name        String    @unique
   description String    @default("")
   products    Product[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
 }
 
 model Product {
@@ -32,8 +30,6 @@ model Product {
   sales      Sale[]
   warranties Warranty[]
   movements  StockMovement[]
-  createdAt  DateTime        @default(now())
-  updatedAt  DateTime        @updatedAt
 }
 
 model Supplier {
@@ -46,21 +42,16 @@ model Supplier {
   products  Int        @default(0)
   status    String     @default("active")
   purchases Purchase[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
 }
 
 model Purchase {
-  id           String   @id
+  id           String    @id
   supplierId   Int?
   supplier     Supplier? @relation(fields: [supplierId], references: [id], onDelete: SetNull)
-  supplierName String   @default("")
-  date         String
-  items        Int      @default(0)
-  total        Decimal  @db.Decimal(12, 2)
-  status       String   @default("ordered")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  supplierName String    @default("")
+  items        Int       @default(0)
+  total        Decimal   @db.Decimal(12, 2)
+  status       String    @default("ordered")
 }
 
 model Customer {
@@ -73,24 +64,19 @@ model Customer {
   type       String     @default("retail")
   sales      Sale[]
   warranties Warranty[]
-  createdAt  DateTime   @default(now())
-  updatedAt  DateTime   @updatedAt
 }
 
 model Sale {
-  id           String   @id
+  id           String    @id
   customerId   Int?
   customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
-  customerName String   @default("")
+  customerName String    @default("")
   productId    Int?
-  product      Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
-  date         String
-  items        Int      @default(0)
-  total        Decimal  @db.Decimal(12, 2)
-  status       String   @default("completed")
-  payment      String   @default("card")
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  product      Product?  @relation(fields: [productId], references: [id], onDelete: SetNull)
+  items        Int       @default(0)
+  total        Decimal   @db.Decimal(12, 2)
+  status       String    @default("completed")
+  payment      String    @default("card")
 }
 
 model Warranty {
@@ -102,11 +88,7 @@ model Warranty {
   customerId   Int?
   customer     Customer? @relation(fields: [customerId], references: [id], onDelete: SetNull)
   customerName String    @default("")
-  purchaseDate String
-  expiry       String
   status       String    @default("active")
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
 }
 
 model StockMovement {
@@ -117,19 +99,13 @@ model StockMovement {
   productName String   @default("")
   qty         Int
   ref         String   @default("")
-  date        String
   user        String   @default("Admin")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  name      String
-  email     String   @unique
-  role      String   @default("Sales Staff")
-  lastLogin String   @default("—")
-  status    String   @default("active")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id     Int    @id @default(autoincrement())
+  name   String
+  email  String @unique
+  role   String @default("Sales Staff")
+  status String @default("active")
 }

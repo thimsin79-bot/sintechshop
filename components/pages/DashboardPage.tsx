@@ -4,7 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { SalesChart } from "@/components/charts/SalesChart";
 import { useData } from "@/lib/store";
-import { formatCurrency, formatDate, todayISO } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 
 interface SearchResult {
   type: string;
@@ -34,40 +34,6 @@ export function DashboardPage() {
     (sum, product) => sum + product.stock * product.cost,
     0,
   );
-
-  const completedSales = data.sales.filter(
-    (sale) => sale.status === "completed",
-  );
-  const referenceDate =
-    completedSales.reduce(
-      (latest, sale) => (sale.date > latest ? sale.date : latest),
-      "",
-    ) || todayISO();
-  const dayKey = referenceDate.slice(0, 10);
-  const monthKey = referenceDate.slice(0, 7);
-  const yearKey = referenceDate.slice(0, 4);
-
-  function summarize(key: string) {
-    const rows = completedSales.filter(
-      (sale) => sale.date && sale.date.startsWith(key),
-    );
-    return {
-      total: rows.reduce((sum, sale) => sum + sale.total, 0),
-      orders: rows.length,
-    };
-  }
-
-  const dailySummary = summarize(dayKey);
-  const monthlySummary = summarize(monthKey);
-  const yearlySummary = summarize(yearKey);
-  const monthLabel = new Date(
-    Number(yearKey),
-    Number(monthKey.slice(5, 7)) - 1,
-    1,
-  ).toLocaleDateString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
 
   const results = useMemo<SearchResult[]>(() => {
     const q = query.trim().toLowerCase();
@@ -267,7 +233,7 @@ export function DashboardPage() {
         <StatCard
           label="Total Products"
           value={String(totalProducts)}
-          note="4 new this month"
+          note="In catalog"
           noteClass="text-emerald-600"
           icon="fa-box"
           iconClass="bg-brand-50 text-brand-600"
@@ -281,9 +247,9 @@ export function DashboardPage() {
           iconClass="bg-amber-50 text-amber-600"
         />
         <StatCard
-          label="Sales (This Week)"
+          label="Total Sales"
           value={formatCurrency(totalSales)}
-          note="12% vs last week"
+          note="Completed invoices"
           noteClass="text-emerald-600"
           icon="fa-dollar-sign"
           iconClass="bg-emerald-50 text-emerald-600"
@@ -295,49 +261,6 @@ export function DashboardPage() {
           icon="fa-warehouse"
           iconClass="bg-violet-50 text-violet-600"
         />
-      </div>
-
-      <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-          <div>
-            <h3 className="font-semibold text-slate-800">Sales Summary</h3>
-            <p className="text-xs text-slate-500">
-              Daily, monthly and yearly totals for completed sales
-            </p>
-          </div>
-          <span className="text-xs text-slate-500">
-            Based on {formatDate(referenceDate)}
-          </span>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <SummaryCard
-            label="Daily"
-            period={formatDate(dayKey)}
-            total={dailySummary.total}
-            orders={dailySummary.orders}
-            icon="fa-calendar-day"
-            iconClass="bg-emerald-50 text-emerald-600"
-            valueClass="text-emerald-600"
-          />
-          <SummaryCard
-            label="Monthly"
-            period={monthLabel}
-            total={monthlySummary.total}
-            orders={monthlySummary.orders}
-            icon="fa-calendar-days"
-            iconClass="bg-brand-50 text-brand-600"
-            valueClass="text-brand-700"
-          />
-          <SummaryCard
-            label="Yearly"
-            period={yearKey}
-            total={yearlySummary.total}
-            orders={yearlySummary.orders}
-            icon="fa-calendar"
-            iconClass="bg-violet-50 text-violet-600"
-            valueClass="text-violet-700"
-          />
-        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -477,9 +400,7 @@ export function DashboardPage() {
                   <p className="text-sm font-medium truncate">
                     {movement.product}
                   </p>
-                  <p className="text-xs text-slate-500">
-                    {movement.ref} • {formatDate(movement.date)}
-                  </p>
+                  <p className="text-xs text-slate-500">{movement.ref}</p>
                 </div>
                 <span
                   className={`text-sm font-semibold ${
@@ -539,45 +460,6 @@ function StatCard({
           <i className={`fas ${icon}`} />
         </div>
       </div>
-    </div>
-  );
-}
-
-function SummaryCard({
-  label,
-  period,
-  total,
-  orders,
-  icon,
-  iconClass,
-  valueClass,
-}: {
-  label: string;
-  period: string;
-  total: number;
-  orders: number;
-  icon: string;
-  iconClass: string;
-  valueClass: string;
-}) {
-  return (
-    <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
-      <div className="flex items-center justify-between">
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-          {label}
-        </p>
-        <div
-          className={`w-8 h-8 rounded-lg ${iconClass} flex items-center justify-center`}
-        >
-          <i className={`fas ${icon} text-sm`} />
-        </div>
-      </div>
-      <p className={`text-2xl font-bold mt-2 ${valueClass}`}>
-        {formatCurrency(total)}
-      </p>
-      <p className="text-xs text-slate-500 mt-1">
-        {period} · {orders} order{orders === 1 ? "" : "s"}
-      </p>
     </div>
   );
 }

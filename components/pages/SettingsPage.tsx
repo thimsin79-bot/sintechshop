@@ -21,8 +21,6 @@ import {
   primaryButton,
   secondaryButton,
 } from "@/lib/styles";
-import { formatDate } from "@/lib/utils";
-
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function SettingsPage() {
@@ -43,10 +41,7 @@ export function SettingsPage() {
   }, [profile]);
 
   const activity = useMemo(
-    () =>
-      [...logged, ...buildActivityLog(data)]
-        .sort((a, b) => b.date.localeCompare(a.date))
-        .slice(0, 12),
+    () => [...logged, ...buildActivityLog(data)].slice(0, 12),
     [logged, data],
   );
 
@@ -350,9 +345,6 @@ export function SettingsPage() {
                   </p>
                   <p className="text-xs text-slate-500 truncate">
                     {entry.detail}
-                  </p>
-                  <p className="text-[11px] text-slate-400 mt-0.5">
-                    {formatDate(entry.date)}
                   </p>
                 </div>
               </div>

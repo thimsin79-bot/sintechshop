@@ -11,7 +11,7 @@ import { useToast } from "@/lib/toast";
 import { useForm } from "@/lib/useForm";
 import { validateSale } from "@/lib/validation";
 import { inputClass } from "@/lib/styles";
-import { formatCurrency, nextCode, todayISO } from "@/lib/utils";
+import { formatCurrency, nextCode } from "@/lib/utils";
 import type { PaymentMethod, SaleDraft } from "@/lib/types";
 
 interface SaleModalProps {
@@ -29,7 +29,6 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
         productId: data.products[0]?.id ?? 0,
         qty: 1,
         payment: "card",
-        date: todayISO(),
       },
       (draft) => validateSale(draft, data.products, data.customers),
     );
@@ -41,7 +40,6 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
       productId: data.products[0]?.id ?? 0,
       qty: 1,
       payment: "card",
-      date: todayISO(),
     });
   }, [open, data.customers, data.products, reset]);
 
@@ -125,14 +123,6 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
               </select>
             </FormField>
           </div>
-          <FormField label="Sale Date" required error={errors.date}>
-            <input
-              type="date"
-              value={values.date}
-              onChange={(event) => setValue("date", event.target.value)}
-              className={inputClass}
-            />
-          </FormField>
           {product ? (
             <p className="text-xs text-slate-500">
               Line total:{" "}

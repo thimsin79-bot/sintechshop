@@ -2,7 +2,7 @@
 
 import { Modal } from "@/components/ui/Modal";
 import { ModalHeader } from "@/components/ui/ModalHeader";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { Customer, Sale } from "@/lib/types";
 
 interface CustomerViewModalProps {
@@ -50,7 +50,7 @@ export function CustomerViewModal({
               <div>
                 <p className="font-medium text-brand-600">{sale.id}</p>
                 <p className="text-xs text-slate-500">
-                  {formatDate(sale.date)} · {sale.items} items
+                  {sale.items} items
                 </p>
               </div>
               <span className="font-semibold">

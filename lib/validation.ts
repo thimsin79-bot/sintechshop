@@ -232,18 +232,6 @@ export function validateWarranty(
   if (isBlank(form.product)) errors.product = "Select a product";
   if (isBlank(form.serial)) errors.serial = "Serial number is required";
   if (isBlank(form.customer)) errors.customer = "Select a customer";
-  if (isBlank(form.purchaseDate)) {
-    errors.purchaseDate = "Purchase date is required";
-  }
-  if (isBlank(form.expiry)) {
-    errors.expiry = "Expiry date is required";
-  } else if (
-    form.purchaseDate &&
-    form.expiry &&
-    form.expiry < form.purchaseDate
-  ) {
-    errors.expiry = "Expiry must be on or after the purchase date";
-  }
 
   return errors;
 }
@@ -260,7 +248,6 @@ export function validatePurchase(
     errors.supplier = "Selected supplier is not available";
   }
 
-  if (isBlank(form.date)) errors.date = "Order date is required";
   if (!isPositiveInteger(form.items)) {
     errors.items = "Items must be a whole number of at least 1";
   }
@@ -292,8 +279,6 @@ export function validateSale(
   } else if (product && form.qty > product.stock) {
     errors.qty = `Only ${product.stock} units in stock`;
   }
-
-  if (isBlank(form.date)) errors.date = "Sale date is required";
 
   return errors;
 }
@@ -379,8 +364,6 @@ export function validateStockMovement(
       errors.qty = `Only ${Math.max(available, 0)} units available`;
     }
   }
-
-  if (isBlank(form.date)) errors.date = "Date is required";
 
   return errors;
 }

@@ -18,7 +18,6 @@ export interface ActivityEntry {
   color: string;
   title: string;
   detail: string;
-  date: string;
 }
 
 const COMPANY_KEY = "sintech.company.v1";
@@ -101,8 +100,7 @@ function isActivityEntry(value: unknown): value is ActivityEntry {
     typeof entry.icon === "string" &&
     typeof entry.color === "string" &&
     typeof entry.title === "string" &&
-    typeof entry.detail === "string" &&
-    typeof entry.date === "string"
+    typeof entry.detail === "string"
   );
 }
 
@@ -119,12 +117,11 @@ export function loadActivityEntries(): ActivityEntry[] {
 }
 
 export function recordActivity(
-  entry: Omit<ActivityEntry, "id" | "date"> & { date?: string },
+  entry: Omit<ActivityEntry, "id">,
 ): ActivityEntry {
   const item: ActivityEntry = {
     ...entry,
     id: `log-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    date: entry.date ?? new Date().toISOString(),
   };
 
   try {
@@ -152,7 +149,6 @@ export function buildActivityLog(data: ShopData): ActivityEntry[] {
           : "bg-rose-50 text-rose-600",
       title: `Invoice ${sale.id} ${sale.status}`,
       detail: `${sale.customer} · ${formatCurrency(sale.total)}`,
-      date: sale.date,
     });
   });
 
@@ -166,7 +162,6 @@ export function buildActivityLog(data: ShopData): ActivityEntry[] {
           : "bg-blue-50 text-blue-600",
       title: `Purchase ${purchase.id} ${purchase.status}`,
       detail: `${purchase.supplier} · ${formatCurrency(purchase.total)}`,
-      date: purchase.date,
     });
   });
 
@@ -180,7 +175,6 @@ export function buildActivityLog(data: ShopData): ActivityEntry[] {
           : "bg-rose-50 text-rose-600",
       title: `Stock ${movement.type} · ${movement.product}`,
       detail: `${movement.type === "in" ? "+" : "-"}${movement.qty} · ${movement.ref}`,
-      date: movement.date,
     });
   });
 
@@ -194,11 +188,8 @@ export function buildActivityLog(data: ShopData): ActivityEntry[] {
           : "bg-rose-50 text-rose-600",
       title: `Warranty ${warranty.id} ${warranty.status}`,
       detail: `${warranty.product} · ${warranty.customer}`,
-      date: warranty.purchaseDate,
     });
   });
 
-  return entries
-    .filter((entry) => entry.date)
-    .sort((a, b) => b.date.localeCompare(a.date));
+  return entries;
 }

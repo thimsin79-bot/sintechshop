@@ -15,7 +15,7 @@ import type {
   UserDraft,
   WarrantyDraft,
 } from "@/lib/types";
-import { nextCode, nextPurchaseId, todayISO } from "@/lib/utils";
+import { nextCode, nextPurchaseId } from "@/lib/utils";
 
 type Tx = Prisma.TransactionClient;
 
@@ -140,7 +140,6 @@ export async function getShopData(): Promise<ShopData> {
     purchases: purchases.map((purchase) => ({
       id: purchase.id,
       supplier: purchase.supplierName,
-      date: purchase.date,
       items: purchase.items,
       total: num(purchase.total),
       status: purchase.status as ShopData["purchases"][number]["status"],
@@ -148,7 +147,6 @@ export async function getShopData(): Promise<ShopData> {
     sales: sales.map((sale) => ({
       id: sale.id,
       customer: sale.customerName,
-      date: sale.date,
       items: sale.items,
       total: num(sale.total),
       status: sale.status as ShopData["sales"][number]["status"],
@@ -168,8 +166,6 @@ export async function getShopData(): Promise<ShopData> {
       product: warranty.productName,
       serial: warranty.serial,
       customer: warranty.customerName,
-      purchaseDate: warranty.purchaseDate,
-      expiry: warranty.expiry,
       status: warranty.status as ShopData["warranties"][number]["status"],
     })),
     stockMovements: stockMovements.map((movement) => ({
@@ -178,7 +174,6 @@ export async function getShopData(): Promise<ShopData> {
       product: movement.productName,
       qty: movement.qty,
       ref: movement.ref,
-      date: movement.date,
       user: movement.user,
     })),
     users: users.map((user) => ({
@@ -186,7 +181,6 @@ export async function getShopData(): Promise<ShopData> {
       name: user.name,
       email: user.email,
       role: user.role,
-      lastLogin: user.lastLogin,
       status: user.status as ShopData["users"][number]["status"],
     })),
   };
@@ -265,7 +259,6 @@ export async function seedDatabase(): Promise<void> {
           name: user.name,
           email: user.email,
           role: user.role,
-          lastLogin: user.lastLogin,
           status: user.status,
         })),
       });
@@ -275,7 +268,6 @@ export async function seedDatabase(): Promise<void> {
           id: purchase.id,
           supplierId: supplierIds.get(purchase.supplier) ?? null,
           supplierName: purchase.supplier,
-          date: purchase.date,
           items: purchase.items,
           total: purchase.total,
           status: purchase.status,
@@ -287,7 +279,6 @@ export async function seedDatabase(): Promise<void> {
           id: sale.id,
           customerId: customerIds.get(sale.customer) ?? null,
           customerName: sale.customer,
-          date: sale.date,
           items: sale.items,
           total: sale.total,
           status: sale.status,
@@ -303,8 +294,6 @@ export async function seedDatabase(): Promise<void> {
           serial: warranty.serial,
           customerId: customerIds.get(warranty.customer) ?? null,
           customerName: warranty.customer,
-          purchaseDate: warranty.purchaseDate,
-          expiry: warranty.expiry,
           status: warranty.status,
         })),
       });
@@ -316,7 +305,6 @@ export async function seedDatabase(): Promise<void> {
           productName: movement.product,
           qty: movement.qty,
           ref: movement.ref,
-          date: movement.date,
           user: movement.user,
         })),
       });
@@ -507,7 +495,6 @@ async function createPurchase(draft: PurchaseDraft): Promise<void> {
         id,
         supplierId,
         supplierName: draft.supplier,
-        date: draft.date,
         items: draft.items,
         total: draft.total,
         status: draft.status,
@@ -527,7 +514,6 @@ async function updatePurchase(
       data: {
         supplierId,
         supplierName: draft.supplier,
-        date: draft.date,
         items: draft.items,
         total: draft.total,
         status: draft.status,
@@ -565,7 +551,6 @@ async function createSale(draft: SaleDraft): Promise<void> {
 
     const id = await nextSaleId(tx);
     const total = num(product.price) * draft.qty;
-    const date = draft.date || todayISO();
 
     const stock = product.stock - draft.qty;
     await tx.product.update({
@@ -587,7 +572,6 @@ async function createSale(draft: SaleDraft): Promise<void> {
         customerId: customer.id,
         customerName: customer.name,
         productId: product.id,
-        date,
         items: draft.qty,
         total,
         status: "completed",
@@ -602,7 +586,6 @@ async function createSale(draft: SaleDraft): Promise<void> {
         productName: product.name,
         qty: draft.qty,
         ref: id,
-        date,
         user: "Admin",
       },
     });
@@ -673,8 +656,6 @@ async function saveWarranty(
       serial: draft.serial,
       customerId: customer?.id ?? null,
       customerName: draft.customer,
-      purchaseDate: draft.purchaseDate,
-      expiry: draft.expiry,
     };
 
     if (id != null) {
@@ -711,7 +692,6 @@ async function saveUser(draft: UserDraft, id?: number | null): Promise<void> {
       name: draft.name,
       email: draft.email,
       role: draft.role,
-      lastLogin: "—",
       status: draft.status,
     },
   });
@@ -756,7 +736,6 @@ async function recordStock(
         productName: product.name,
         qty,
         ref: ref || (type === "in" ? "MANUAL-IN" : "MANUAL-OUT"),
-        date: todayISO(),
         user: "Admin",
       },
     });
@@ -831,7 +810,6 @@ async function updateStockMovement(
         productName: product.name,
         qty: draft.qty,
         ref: draft.ref || (draft.type === "in" ? "MANUAL-IN" : "MANUAL-OUT"),
-        date: draft.date || todayISO(),
         user: draft.user || "Admin",
       },
     });

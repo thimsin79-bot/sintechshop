@@ -41,7 +41,7 @@ export function ReportsPage() {
     <div className="fade-in space-y-6">
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
-          <p className="text-sm text-slate-500">Gross Profit (Week)</p>
+          <p className="text-sm text-slate-500">Gross Profit</p>
           <p className="text-2xl font-bold mt-1 text-emerald-600">
             {formatCurrency(grossProfit)}
           </p>

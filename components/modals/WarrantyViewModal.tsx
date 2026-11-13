@@ -2,7 +2,6 @@
 
 import { Modal } from "@/components/ui/Modal";
 import { ModalHeader } from "@/components/ui/ModalHeader";
-import { formatDate } from "@/lib/utils";
 import type { Warranty } from "@/lib/types";
 
 interface WarrantyViewModalProps {
@@ -32,8 +31,6 @@ export function WarrantyViewModal({
           <Row label="Product" value={warranty.product} />
           <Row label="Serial" value={warranty.serial} mono />
           <Row label="Customer" value={warranty.customer} />
-          <Row label="Purchased" value={formatDate(warranty.purchaseDate)} />
-          <Row label="Expires" value={formatDate(warranty.expiry)} />
           <div className="flex justify-between">
             <span className="text-slate-500">Status</span>
             <span

@@ -36,20 +36,15 @@ const LABEL: Record<DatabaseConnectionState, string> = {
   disconnected: "Database offline",
 };
 
-function detailTitle(status: DatabaseConnectionState, message: string, checkedAt: string | null) {
-  if (!checkedAt) return message;
-  return `${message} Last checked ${new Date(checkedAt).toLocaleTimeString()}. Click to refresh.`;
-}
-
 export function DatabaseStatusPill({ className }: { className?: string }) {
-  const { status, latencyMs, message, checkedAt, refresh } = useDatabaseStatus();
+  const { status, latencyMs, message, refresh } = useDatabaseStatus();
   const tone = TONE[status];
 
   return (
     <button
       type="button"
       onClick={() => void refresh()}
-      title={detailTitle(status, message, checkedAt)}
+      title={message}
       className={cn(
         "inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs font-medium transition hover:bg-slate-50",
         tone.text,
@@ -78,7 +73,7 @@ export function DatabaseStatusPill({ className }: { className?: string }) {
 }
 
 export function DatabaseStatusCard({ className }: { className?: string }) {
-  const { status, latencyMs, message, checkedAt, refresh } = useDatabaseStatus();
+  const { status, latencyMs, message, refresh } = useDatabaseStatus();
   const tone = TONE[status];
 
   return (
@@ -126,12 +121,7 @@ export function DatabaseStatusCard({ className }: { className?: string }) {
         ) : null}
       </div>
 
-      <div className="mt-3 flex items-center justify-between gap-3">
-        <p className="text-[11px] text-slate-400">
-          {checkedAt
-            ? `Last checked ${new Date(checkedAt).toLocaleTimeString()}`
-            : "Not checked yet"}
-        </p>
+      <div className="mt-3 flex items-center justify-end gap-3">
         <button
           type="button"
           onClick={() => void refresh()}

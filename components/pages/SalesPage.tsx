@@ -9,7 +9,7 @@ import { useData } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { usePagination } from "@/lib/pagination";
 import { primaryButton } from "@/lib/styles";
-import { formatCurrency, formatDate } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import type { Sale } from "@/lib/types";
 
 export function SalesPage() {
@@ -64,7 +64,6 @@ export function SalesPage() {
               <tr className="text-left">
                 <th className="px-5 py-3.5 font-medium">Invoice</th>
                 <th className="px-5 py-3.5 font-medium">Customer</th>
-                <th className="px-5 py-3.5 font-medium">Date</th>
                 <th className="px-5 py-3.5 font-medium">Items</th>
                 <th className="px-5 py-3.5 font-medium">Total</th>
                 <th className="px-5 py-3.5 font-medium">Payment</th>
@@ -82,7 +81,6 @@ export function SalesPage() {
                     {sale.id}
                   </td>
                   <td className="px-5 py-3.5">{sale.customer}</td>
-                  <td className="px-5 py-3.5">{formatDate(sale.date)}</td>
                   <td className="px-5 py-3.5">{sale.items}</td>
                   <td className="px-5 py-3.5 font-semibold">
                     {formatCurrency(sale.total)}
@@ -140,7 +138,7 @@ export function SalesPage() {
               {!data.sales.length ? (
                 <tr>
                   <td
-                    colSpan={8}
+                    colSpan={7}
                     className="px-5 py-10 text-center text-slate-500"
                   >
                     No sales yet

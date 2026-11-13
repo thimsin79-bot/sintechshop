@@ -70,7 +70,6 @@ export function UsersPage() {
               <tr className="text-left">
                 <th className="px-5 py-3.5 font-medium">User</th>
                 <th className="px-5 py-3.5 font-medium">Role</th>
-                <th className="px-5 py-3.5 font-medium">Last Login</th>
                 <th className="px-5 py-3.5 font-medium">Status</th>
                 <th className="px-5 py-3.5 font-medium text-right">Actions</th>
               </tr>
@@ -95,9 +94,6 @@ export function UsersPage() {
                     <span className="badge bg-brand-50 text-brand-700">
                       {user.role}
                     </span>
-                  </td>
-                  <td className="px-5 py-3.5 text-slate-600">
-                    {user.lastLogin || "—"}
                   </td>
                   <td className="px-5 py-3.5">
                     <span
@@ -149,7 +145,7 @@ export function UsersPage() {
               {!data.users.length ? (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={4}
                     className="px-5 py-10 text-center text-slate-500"
                   >
                     No users yet
