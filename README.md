@@ -19,7 +19,6 @@ Application data is stored in Neon Postgres through Prisma, and accounts are man
 - Warranty registration and claims
 - Reports with category chart, sales metrics, and CSV exports
 - User management with active/inactive status and role assignment
-- Reset-to-demo-data action backed by a database transaction
 - Responsive layout with mobile sidebar
 - Persistent data across browsers and devices via Neon Postgres
 
@@ -61,7 +60,7 @@ cp .env.example .env.local
 | `NEON_AUTH_BASE_URL` | Managed Better Auth URL, e.g. `https://<endpoint>.neonauth.<region>.aws.neon.tech/neondb/auth` |
 | `NEON_AUTH_COOKIE_SECRET` | Random 32-byte base64 secret used to sign session cookies |
 | `DATABASE_URL` | Pooled Postgres connection string (used by the app at runtime) |
-| `DIRECT_URL` | Direct (non-pooled) Postgres connection string (used by Prisma CLI migrations and seeding) |
+| `DIRECT_URL` | Direct (non-pooled) Postgres connection string (used by Prisma CLI migrations) |
 
 Generate a cookie secret with:
 
@@ -73,10 +72,9 @@ openssl rand -base64 32
 
 ```bash
 npm run db:push
-npm run db:seed
 ```
 
-`db:push` creates the normalized schema (categories, products, suppliers, purchases, sales, customers, warranties, stock movements, users). `db:seed` loads the demo records from `lib/seed.ts`.
+`db:push` creates the normalized schema (categories, products, suppliers, purchases, sales, customers, warranties, stock movements, users). The database starts empty, and all records are created through the app.
 
 ### Run the development server
 
@@ -110,7 +108,6 @@ npm run typecheck
 | `npm run db:generate` | Generate the Prisma client into `lib/generated/prisma` |
 | `npm run db:push` | Push the Prisma schema to the database |
 | `npm run db:migrate` | Create and apply a development migration |
-| `npm run db:seed` | Reset the database and load demo data |
 
 ## Routes
 
@@ -126,7 +123,7 @@ npm run typecheck
 | `/customers` | Customer database |
 | `/warranty` | Warranty tracking |
 | `/reports` | Analytics and CSV exports |
-| `/users` | User management and demo-data reset |
+| `/users` | User management |
 | `/settings` | Company profile and preferences |
 | `/login` | Sign in |
 | `/signup` | Create an account |
@@ -175,17 +172,15 @@ lib/
   auth-client.ts          Neon Auth browser client
   auth-server.ts          Neon Auth server instance
   db/prisma.ts            Prisma client with the Neon serverless adapter
-  server/store.ts         Database queries, seed/reset, and action handlers
+  server/store.ts         Database queries and action handlers
   types.ts                TypeScript entity and draft types
-  seed.ts                 Demo seed data
-  utils.ts                Formatting, ID generation, date helpers, CSV export
+  utils.ts                Formatting, ID generation, CSV export
   navigation.ts           Navigation items and page metadata
   styles.ts               Shared Tailwind class constants
   toast.tsx               Toast provider and hook
 
 prisma/
   schema.prisma           Normalized data model
-  seed.ts                 Prisma seed entry point
 
 legacy/                   Original standalone HTML/CSS/JS implementation
 ```
@@ -200,7 +195,6 @@ legacy/                   Original standalone HTML/CSS/JS implementation
 - The browser loads data with `GET /api/store` after sign-in and sends mutations to `POST /api/store` as `{ action, payload }`.
 - The server returns the refreshed dataset after each mutation, so all open pages stay in sync.
 - Deletes preserve historical records through nullable foreign keys and name snapshots.
-- Use **Users > Reset Demo Data** to truncate the tables and re-seed the demo dataset.
 
 The old `localStorage` keys (`techvault.data.v1`, `techvault.session.v1`, `techvault.accounts.v1`) are cleared automatically on first load.
 
@@ -214,7 +208,6 @@ The shared `useData()` hook exposes the same API as before, but each action disp
 - Warranty registration and claims
 - Stock In / Out recording, editing, and deletion
 - Record deletion
-- Demo data reset
 
 Validation still runs in the browser for immediate feedback, including stock availability checks for sales and stock-out operations. The server re-validates every mutation before writing.
 

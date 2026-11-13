@@ -7,16 +7,15 @@ import { Pagination } from "@/components/ui/Pagination";
 import { useData } from "@/lib/store";
 import { useToast } from "@/lib/toast";
 import { usePagination } from "@/lib/pagination";
-import { primaryButton, secondaryButton } from "@/lib/styles";
+import { primaryButton } from "@/lib/styles";
 import { initials } from "@/lib/utils";
 import type { User } from "@/lib/types";
 
 export function UsersPage() {
-  const { data, deleteRecord, reset, toggleUserStatus } = useData();
+  const { data, deleteRecord, toggleUserStatus } = useData();
   const { showToast } = useToast();
   const [editing, setEditing] = useState<User | null | undefined>(undefined);
   const [deleting, setDeleting] = useState<User | null>(null);
-  const [resetting, setResetting] = useState(false);
   const pagination = usePagination(data.users, 10);
 
   function handleDelete() {
@@ -33,34 +32,19 @@ export function UsersPage() {
     );
   }
 
-  function handleReset() {
-    reset();
-    setResetting(false);
-    showToast("Demo data restored");
-  }
-
   return (
     <div className="fade-in space-y-5">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
         <p className="text-sm text-slate-500">
           {data.users.length} system users
         </p>
-        <div className="flex gap-3">
-          <button
-            type="button"
-            onClick={() => setResetting(true)}
-            className={secondaryButton}
-          >
-            <i className="fas fa-rotate-left" /> Reset Demo Data
-          </button>
-          <button
-            type="button"
-            onClick={() => setEditing(null)}
-            className={primaryButton}
-          >
-            <i className="fas fa-plus" /> Add User
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={() => setEditing(null)}
+          className={primaryButton}
+        >
+          <i className="fas fa-plus" /> Add User
+        </button>
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
@@ -177,14 +161,6 @@ export function UsersPage() {
         message={`Are you sure you want to delete ${deleting?.name ?? "this user"}? This action cannot be undone.`}
         onCancel={() => setDeleting(null)}
         onConfirm={handleDelete}
-      />
-      <ConfirmDialog
-        open={resetting}
-        title="Reset demo data"
-        message="This will restore all products, sales, customers, and other records to the original demo data. Your current changes will be lost."
-        confirmLabel="Reset"
-        onCancel={() => setResetting(false)}
-        onConfirm={handleReset}
       />
     </div>
   );

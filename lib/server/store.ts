@@ -1,6 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
 import { Prisma } from "@/lib/generated/prisma/client";
-import { seedData } from "@/lib/seed";
 import type {
   CategoryDraft,
   CollectionKey,
@@ -184,133 +183,6 @@ export async function getShopData(): Promise<ShopData> {
       status: user.status as ShopData["users"][number]["status"],
     })),
   };
-}
-
-export async function seedDatabase(): Promise<void> {
-  await prisma.$transaction(
-    async (tx) => {
-      await tx.$executeRawUnsafe(
-        'TRUNCATE TABLE "StockMovement", "Warranty", "Sale", "Purchase", "Product", "Category", "Supplier", "Customer", "User" RESTART IDENTITY CASCADE',
-      );
-
-      const categories = await tx.category.createManyAndReturn({
-        data: seedData.categories.map((category) => ({
-          name: category.name,
-          description: category.description,
-        })),
-        select: { id: true, name: true },
-      });
-      const categoryIds = new Map(
-        categories.map((category) => [category.name, category.id]),
-      );
-
-      const products = await tx.product.createManyAndReturn({
-        data: seedData.products.map((product) => ({
-          sku: product.sku,
-          name: product.name,
-          categoryId: categoryIds.get(product.category) ?? null,
-          brand: product.brand,
-          price: product.price,
-          cost: product.cost,
-          stock: product.stock,
-          minStock: product.minStock,
-          warranty: product.warranty,
-          status: product.status,
-        })),
-        select: { id: true, name: true },
-      });
-      const productIds = new Map(
-        products.map((product) => [product.name, product.id]),
-      );
-
-      const suppliers = await tx.supplier.createManyAndReturn({
-        data: seedData.suppliers.map((supplier) => ({
-          name: supplier.name,
-          contact: supplier.contact,
-          email: supplier.email,
-          phone: supplier.phone,
-          city: supplier.city,
-          products: supplier.products,
-          status: supplier.status,
-        })),
-        select: { id: true, name: true },
-      });
-      const supplierIds = new Map(
-        suppliers.map((supplier) => [supplier.name, supplier.id]),
-      );
-
-      const customers = await tx.customer.createManyAndReturn({
-        data: seedData.customers.map((customer) => ({
-          name: customer.name,
-          email: customer.email,
-          phone: customer.phone,
-          orders: customer.orders,
-          spent: customer.spent,
-          type: customer.type,
-        })),
-        select: { id: true, name: true },
-      });
-      const customerIds = new Map(
-        customers.map((customer) => [customer.name, customer.id]),
-      );
-
-      await tx.user.createMany({
-        data: seedData.users.map((user) => ({
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          status: user.status,
-        })),
-      });
-
-      await tx.purchase.createMany({
-        data: seedData.purchases.map((purchase) => ({
-          id: purchase.id,
-          supplierId: supplierIds.get(purchase.supplier) ?? null,
-          supplierName: purchase.supplier,
-          items: purchase.items,
-          total: purchase.total,
-          status: purchase.status,
-        })),
-      });
-
-      await tx.sale.createMany({
-        data: seedData.sales.map((sale) => ({
-          id: sale.id,
-          customerId: customerIds.get(sale.customer) ?? null,
-          customerName: sale.customer,
-          items: sale.items,
-          total: sale.total,
-          status: sale.status,
-          payment: sale.payment,
-        })),
-      });
-
-      await tx.warranty.createMany({
-        data: seedData.warranties.map((warranty) => ({
-          id: warranty.id,
-          productId: productIds.get(warranty.product) ?? null,
-          productName: warranty.product,
-          serial: warranty.serial,
-          customerId: customerIds.get(warranty.customer) ?? null,
-          customerName: warranty.customer,
-          status: warranty.status,
-        })),
-      });
-
-      await tx.stockMovement.createMany({
-        data: seedData.stockMovements.map((movement) => ({
-          type: movement.type,
-          productId: productIds.get(movement.product) ?? null,
-          productName: movement.product,
-          qty: movement.qty,
-          ref: movement.ref,
-          user: movement.user,
-        })),
-      });
-    },
-    { maxWait: 15000, timeout: 60000 },
-  );
 }
 
 async function deleteSale(tx: Tx, id: string): Promise<void> {
@@ -847,9 +719,6 @@ export async function handleStoreAction(
   payload: Record<string, unknown>,
 ): Promise<void> {
   switch (action) {
-    case "reset":
-      await seedDatabase();
-      return;
     case "deleteRecord":
       await deleteRecord(
         payload.collection as CollectionKey,

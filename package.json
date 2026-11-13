@@ -10,8 +10,7 @@
     "postinstall": "prisma generate",
     "db:generate": "prisma generate",
     "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev",
-    "db:seed": "prisma db seed"
+    "db:migrate": "prisma migrate dev"
   },
   "dependencies": {
     "@fortawesome/fontawesome-free": "^6.7.2",

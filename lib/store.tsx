@@ -45,7 +45,6 @@ const LEGACY_STORAGE_KEYS = [
 interface StoreContextValue {
   data: ShopData;
   ready: boolean;
-  reset: () => void;
   deleteRecord: (collection: CollectionKey, id: number | string) => void;
   saveProduct: (draft: ProductDraft, id?: number | null) => void;
   saveCategory: (draft: CategoryDraft, id?: number | null) => void;
@@ -161,10 +160,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
     },
     [load],
   );
-
-  const reset = useCallback(() => {
-    dispatch("reset");
-  }, [dispatch]);
 
   const deleteRecord = useCallback(
     (collection: CollectionKey, id: number | string) => {
@@ -352,7 +347,6 @@ export function DataProvider({ children }: { children: ReactNode }) {
       value={{
         data,
         ready,
-        reset,
         deleteRecord,
         saveProduct,
         saveCategory,
