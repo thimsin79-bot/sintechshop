@@ -52,19 +52,13 @@ export function WarrantyViewModal({
           >
             Close
           </button>
-          {warranty.status === "active" ? (
-            <button
-              type="button"
-              onClick={onClaim}
-              className="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg"
-            >
-              File Claim
-            </button>
-          ) : (
-            <span className="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed">
-              Claimed
-            </span>
-          )}
+          <button
+            type="button"
+            onClick={onClaim}
+            className="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg"
+          >
+            File Claim
+          </button>
         </div>
       </div>
     </Modal>

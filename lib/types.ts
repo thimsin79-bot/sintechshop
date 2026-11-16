@@ -12,7 +12,6 @@ export interface Product {
   id: number;
   sku: string;
   name: string;
-  categoryId?: number | null;
   category: string;
   brand: string;
   price: number;
@@ -42,7 +41,6 @@ export interface Supplier {
 
 export interface Purchase {
   id: string;
-  supplierId?: number | null;
   supplier: string;
   items: number;
   total: number;
@@ -51,11 +49,7 @@ export interface Purchase {
 
 export interface Sale {
   id: string;
-  customerId?: number | null;
   customer: string;
-  productId?: number | null;
-  product?: string;
-  productName?: string;
   items: number;
   total: number;
   status: SaleStatus;
@@ -74,10 +68,8 @@ export interface Customer {
 
 export interface Warranty {
   id: string;
-  productId?: number | null;
   product: string;
   serial: string;
-  customerId?: number | null;
   customer: string;
   status: WarrantyStatus;
 }
@@ -85,7 +77,6 @@ export interface Warranty {
 export interface StockMovement {
   id: number;
   type: StockMovementType;
-  productId?: number | null;
   product: string;
   qty: number;
   ref: string;
@@ -118,13 +109,7 @@ export type ProductDraft = Omit<Product, "id" | "status">;
 export type CategoryDraft = Pick<Category, "name" | "description">;
 export type SupplierDraft = Omit<Supplier, "id" | "products">;
 export type CustomerDraft = Pick<Customer, "name" | "email" | "phone" | "type">;
-export type WarrantyDraft = {
-  productId?: number | null;
-  product: string;
-  serial: string;
-  customerId?: number | null;
-  customer: string;
-};
+export type WarrantyDraft = Pick<Warranty, "product" | "serial" | "customer">;
 export type UserDraft = Pick<User, "name" | "email" | "role" | "status">;
 export type PurchaseDraft = Pick<Purchase, "supplier" | "items" | "total" | "status">;
 export type StockMovementDraft = {

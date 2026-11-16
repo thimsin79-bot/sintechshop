@@ -41,20 +41,6 @@ export function nextCode(
   return prefix + (pad ? String(next).padStart(pad, "0") : next);
 }
 
-export function compareCodesDesc(
-  a: { id: string | number },
-  b: { id: string | number },
-): number {
-  const aStr = String(a.id);
-  const bStr = String(b.id);
-  const cmp = bStr.localeCompare(aStr, undefined, {
-    numeric: true,
-    sensitivity: "base",
-  });
-  if (cmp !== 0) return cmp;
-  return bStr.localeCompare(aStr);
-}
-
 export function nextPurchaseId(purchases: { id: string }[]): string {
   const year = new Date().getFullYear();
   const prefix = `PO-${year}-`;

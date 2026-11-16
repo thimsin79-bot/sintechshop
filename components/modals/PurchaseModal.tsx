@@ -34,7 +34,9 @@ export function PurchaseModal({
   const { values, errors, formError, setValue, reset, submit } =
     useForm<PurchaseDraft>(
       {
-        supplier: availableSuppliers[0]?.name ?? "",
+        supplier:
+          data.suppliers.find((supplier) => supplier.status === "active")
+            ?.name ?? "",
         items: 1,
         total: 0,
         status: "ordered",
@@ -53,7 +55,9 @@ export function PurchaseModal({
             status: purchase.status,
           }
         : {
-            supplier: availableSuppliers[0]?.name ?? "",
+            supplier:
+              data.suppliers.find((supplier) => supplier.status === "active")
+                ?.name ?? "",
             items: 1,
             total: 0,
             status: "ordered",

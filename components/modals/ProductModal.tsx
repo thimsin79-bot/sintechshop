@@ -97,15 +97,11 @@ export function ProductModal({ open, product, onClose }: ProductModalProps) {
                 onChange={(event) => setValue("category", event.target.value)}
                 className={inputClass}
               >
-                {data.categories.length ? (
-                  data.categories.map((category) => (
-                    <option key={category.id} value={category.name}>
-                      {category.name}
-                    </option>
-                  ))
-                ) : (
-                  <option value="">No categories available</option>
-                )}
+                {data.categories.map((category) => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
               </select>
             </FormField>
           </div>

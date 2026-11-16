@@ -50,7 +50,7 @@ export function CustomerViewModal({
               <div>
                 <p className="font-medium text-brand-600">{sale.id}</p>
                 <p className="text-xs text-slate-500">
-                  {sale.productName || sale.product ? `${sale.productName || sale.product} · ` : ""}{sale.items} item{sale.items !== 1 ? "s" : ""}
+                  {sale.items} items
                 </p>
               </div>
               <span className="font-semibold">

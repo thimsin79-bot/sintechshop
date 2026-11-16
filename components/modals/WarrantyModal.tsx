@@ -30,10 +30,8 @@ export function WarrantyModal({
   const { values, errors, formError, setValue, reset, submit } =
     useForm<WarrantyDraft>(
       {
-        productId: data.products[0]?.id ?? null,
         product: data.products[0]?.name ?? "",
         serial: "",
-        customerId: data.customers[0]?.id ?? null,
         customer: data.customers[0]?.name ?? "",
       },
       validateWarranty,
@@ -43,20 +41,16 @@ export function WarrantyModal({
     if (!open) return;
     if (warranty) {
       reset({
-        productId: warranty.productId ?? null,
         product: warranty.product,
         serial: warranty.serial,
-        customerId: warranty.customerId ?? null,
         customer: warranty.customer,
       });
       return;
     }
 
     reset({
-      productId: data.products[0]?.id ?? null,
       product: data.products[0]?.name ?? "",
       serial: "",
-      customerId: data.customers[0]?.id ?? null,
       customer: data.customers[0]?.name ?? "",
     });
   }, [open, warranty, data.products, data.customers, reset]);
@@ -81,23 +75,14 @@ export function WarrantyModal({
           <FormField label="Product" required error={errors.product}>
             <select
               value={values.product}
-              onChange={(event) => {
-                const name = event.target.value;
-                const found = data.products.find((item) => item.name === name);
-                setValue("product", name);
-                setValue("productId", found?.id ?? null);
-              }}
+              onChange={(event) => setValue("product", event.target.value)}
               className={inputClass}
             >
-              {data.products.length ? (
-                data.products.map((product) => (
-                  <option key={product.id} value={product.name}>
-                    {product.name}
-                  </option>
-                ))
-              ) : (
-                <option value="">No products available</option>
-              )}
+              {data.products.map((product) => (
+                <option key={product.id} value={product.name}>
+                  {product.name}
+                </option>
+              ))}
             </select>
           </FormField>
           <FormField label="Serial Number" required error={errors.serial}>
@@ -111,23 +96,14 @@ export function WarrantyModal({
           <FormField label="Customer" required error={errors.customer}>
             <select
               value={values.customer}
-              onChange={(event) => {
-                const name = event.target.value;
-                const found = data.customers.find((item) => item.name === name);
-                setValue("customer", name);
-                setValue("customerId", found?.id ?? null);
-              }}
+              onChange={(event) => setValue("customer", event.target.value)}
               className={inputClass}
             >
-              {data.customers.length ? (
-                data.customers.map((customer) => (
-                  <option key={customer.id} value={customer.name}>
-                    {customer.name}
-                  </option>
-                ))
-              ) : (
-                <option value="">No customers available</option>
-              )}
+              {data.customers.map((customer) => (
+                <option key={customer.id} value={customer.name}>
+                  {customer.name}
+                </option>
+              ))}
             </select>
           </FormField>
           <FormError message={formError} />

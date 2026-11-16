@@ -71,9 +71,9 @@ export function StockModal({
   useEffect(() => {
     if (!open) return;
     if (movement) {
-      const product = movement.productId
-        ? data.products.find((item) => item.id === movement.productId)
-        : data.products.find((item) => item.name === movement.product);
+      const product = data.products.find(
+        (item) => item.name === movement.product,
+      );
       reset({
         type: movement.type,
         productId: product?.id ?? data.products[0]?.id ?? 0,
@@ -142,15 +142,11 @@ export function StockModal({
                 }
                 className={inputClass}
               >
-                {data.products.length ? (
-                  data.products.map((product) => (
-                    <option key={product.id} value={product.id}>
-                      {product.name} ({product.stock} in stock)
-                    </option>
-                  ))
-                ) : (
-                  <option value={0}>No products available</option>
-                )}
+                {data.products.map((product) => (
+                  <option key={product.id} value={product.id}>
+                    {product.name} ({product.stock} in stock)
+                  </option>
+                ))}
               </select>
             </FormField>
             {isEdit ? (

@@ -350,10 +350,7 @@ export function validateStockMovement(
   if (!isPositiveInteger(form.qty)) {
     errors.qty = "Quantity must be a whole number of at least 1";
   } else if (product && form.type === "out") {
-    const sameProduct =
-      movement?.productId != null
-        ? movement.productId === product.id
-        : movement?.product === product.name;
+    const sameProduct = movement?.product === product.name;
     const previousEffect = movement
       ? movement.type === "in"
         ? movement.qty
