@@ -74,11 +74,15 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
               }
               className={inputClass}
             >
-              {data.customers.map((customer) => (
-                <option key={customer.id} value={customer.id}>
-                  {customer.name}
-                </option>
-              ))}
+              {data.customers.length ? (
+                data.customers.map((customer) => (
+                  <option key={customer.id} value={customer.id}>
+                    {customer.name}
+                  </option>
+                ))
+              ) : (
+                <option value={0}>No customers available</option>
+              )}
             </select>
           </FormField>
           <FormField label="Product" required error={errors.productId}>
@@ -89,12 +93,16 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
               }
               className={inputClass}
             >
-              {data.products.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.name} — {formatCurrency(item.price)} ({item.stock} in
-                  stock)
-                </option>
-              ))}
+              {data.products.length ? (
+                data.products.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name} — {formatCurrency(item.price)} ({item.stock} in
+                    stock)
+                  </option>
+                ))
+              ) : (
+                <option value={0}>No products available</option>
+              )}
             </select>
           </FormField>
           <div className="grid grid-cols-2 gap-4">

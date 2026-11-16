@@ -6,14 +6,6 @@ import { useToast } from "@/lib/toast";
 import { secondaryButton } from "@/lib/styles";
 import { exportCsv, formatCurrency } from "@/lib/utils";
 
-const topProducts = [
-  { name: "NVIDIA RTX 4090 24GB", sold: 8, revenue: 12792 },
-  { name: "AMD Ryzen 9 7950X", sold: 11, revenue: 6039 },
-  { name: "Samsung 990 PRO 2TB", sold: 14, revenue: 2646 },
-  { name: "Corsair Vengeance 32GB", sold: 18, revenue: 2322 },
-  { name: "ASUS ROG Strix X670E-E", sold: 5, revenue: 2495 },
-];
-
 type ReportKey = "sales" | "products" | "purchases" | "warranties";
 
 export function ReportsPage() {
@@ -21,12 +13,42 @@ export function ReportsPage() {
   const { showToast } = useToast();
 
   const completed = data.sales.filter((sale) => sale.status === "completed");
+  const productMap = new Map(
+    data.products.map((product) => [product.id, product]),
+  );
   const unitsSold = completed.reduce((sum, sale) => sum + sale.items, 0);
-  const avgOrder = completed.length
-    ? completed.reduce((sum, sale) => sum + sale.total, 0) / completed.length
-    : 0;
-  const grossProfit =
-    completed.reduce((sum, sale) => sum + sale.total, 0) * 0.28;
+  const revenue = completed.reduce((sum, sale) => sum + sale.total, 0);
+  const avgOrder = completed.length ? revenue / completed.length : 0;
+  const grossProfit = completed.reduce((sum, sale) => {
+    const cost =
+      sale.productId != null
+        ? (productMap.get(sale.productId)?.cost ?? 0) * sale.items
+        : 0;
+    return sum + sale.total - cost;
+  }, 0);
+  const margin = revenue > 0 ? (grossProfit / revenue) * 100 : 0;
+
+  const productTotals = new Map<
+    string,
+    { name: string; sold: number; revenue: number }
+  >();
+  completed.forEach((sale) => {
+    const key = String(sale.productId ?? "deleted");
+    const current = productTotals.get(key) ?? {
+      name:
+        sale.productId != null
+          ? (productMap.get(sale.productId)?.name ?? sale.productName ?? sale.product ?? "Deleted product")
+          : (sale.productName || sale.product || "Deleted product"),
+      sold: 0,
+      revenue: 0,
+    };
+    current.sold += sale.items;
+    current.revenue += sale.total;
+    productTotals.set(key, current);
+  });
+  const topProducts = [...productTotals.values()]
+    .sort((a, b) => b.revenue - a.revenue)
+    .slice(0, 5);
 
   function handleExport(key: ReportKey, label: string) {
     const rows = data[key] as unknown as Record<string, unknown>[];
@@ -45,7 +67,9 @@ export function ReportsPage() {
           <p className="text-2xl font-bold mt-1 text-emerald-600">
             {formatCurrency(grossProfit)}
           </p>
-          <p className="text-xs text-slate-500 mt-1">Margin ~28%</p>
+          <p className="text-xs text-slate-500 mt-1">
+            Margin {margin.toFixed(1)}% · revenue minus unit cost
+          </p>
         </div>
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
           <p className="text-sm text-slate-500">Units Sold</p>
@@ -64,25 +88,33 @@ export function ReportsPage() {
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
           <h3 className="font-semibold mb-4">Sales by Category</h3>
-          <CategoryChart />
+          <CategoryChart sales={data.sales} products={data.products} />
         </div>
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
           <h3 className="font-semibold mb-4">Top Selling Products</h3>
           <div className="space-y-3">
-            {topProducts.map((product, index) => (
-              <div key={product.name} className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-700 text-xs font-bold flex items-center justify-center">
-                  {index + 1}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{product.name}</p>
-                  <p className="text-xs text-slate-500">{product.sold} units</p>
+            {topProducts.length ? (
+              topProducts.map((product, index) => (
+                <div key={`${product.name}-${index}`} className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-brand-50 text-brand-700 text-xs font-bold flex items-center justify-center">
+                    {index + 1}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {product.name}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      {product.sold} units
+                    </p>
+                  </div>
+                  <span className="text-sm font-semibold">
+                    {formatCurrency(product.revenue)}
+                  </span>
                 </div>
-                <span className="text-sm font-semibold">
-                  {formatCurrency(product.revenue)}
-                </span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-slate-500">No completed sales yet</p>
+            )}
           </div>
         </div>
       </div>

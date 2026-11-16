@@ -89,7 +89,9 @@ export function SaleInvoiceModal({
           </thead>
           <tbody>
             <tr className="border-b border-slate-50">
-              <td className="py-3">Items purchased</td>
+              <td className="py-3 font-medium text-slate-800">
+                {sale.productName || sale.product || "Items purchased"}
+              </td>
               <td className="py-3 text-center">{sale.items}</td>
               <td className="py-3 text-right">{formatCurrency(sale.total)}</td>
             </tr>

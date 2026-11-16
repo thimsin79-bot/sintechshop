@@ -75,16 +75,18 @@ export function DashboardPage() {
     });
 
     data.sales.forEach((sale) => {
+      const prodName = sale.productName || sale.product;
       if (
         sale.id.toLowerCase().includes(q) ||
-        sale.customer.toLowerCase().includes(q)
+        sale.customer.toLowerCase().includes(q) ||
+        (prodName && prodName.toLowerCase().includes(q))
       ) {
         found.push({
           type: "Invoice",
           icon: "fa-receipt",
           color: "bg-emerald-50 text-emerald-600",
           title: sale.id,
-          subtitle: `${sale.customer} · ${formatCurrency(sale.total)} · ${sale.status}`,
+          subtitle: `${sale.customer}${prodName ? ` · ${prodName}` : ""} · ${formatCurrency(sale.total)} · ${sale.status}`,
           href: "/sales",
         });
       }
@@ -267,12 +269,11 @@ export function DashboardPage() {
         <div className="xl:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-800">Sales Overview</h3>
-            <select className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50">
-              <option>Last 7 days</option>
-              <option>Last 30 days</option>
-            </select>
+            <span className="text-xs text-slate-500">
+              Recent completed invoices
+            </span>
           </div>
-          <SalesChart />
+          <SalesChart sales={data.sales} />
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">

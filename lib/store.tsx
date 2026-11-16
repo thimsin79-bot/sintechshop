@@ -309,9 +309,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
       if (!product) return "Select a product";
       if (draft.qty <= 0) return "Quantity must be greater than zero";
 
-      const oldProduct = data.products.find(
-        (item) => item.name === movement.product,
-      );
+      const oldProduct = movement.productId
+        ? data.products.find((item) => item.id === movement.productId)
+        : data.products.find((item) => item.name === movement.product);
       const oldEffect = movement.type === "in" ? movement.qty : -movement.qty;
       const newEffect = draft.type === "in" ? draft.qty : -draft.qty;
 

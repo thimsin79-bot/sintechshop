@@ -23,7 +23,11 @@ export function CustomersPage() {
   const pagination = usePagination(data.customers, 10);
 
   const customerSales = viewing
-    ? data.sales.filter((sale) => sale.customer === viewing.name)
+    ? data.sales.filter(
+        (sale) =>
+          (sale.customerId != null && sale.customerId === viewing.id) ||
+          sale.customer.toLowerCase() === viewing.name.toLowerCase(),
+      )
     : [];
 
   function handleDelete() {

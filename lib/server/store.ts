@@ -14,7 +14,7 @@ import type {
   UserDraft,
   WarrantyDraft,
 } from "@/lib/types";
-import { nextCode, nextPurchaseId } from "@/lib/utils";
+import { compareCodesDesc, nextCode, nextPurchaseId } from "@/lib/utils";
 
 type Tx = Prisma.TransactionClient;
 
@@ -100,18 +100,36 @@ export async function getShopData(): Promise<ShopData> {
     prisma.category.findMany({ orderBy: { id: "asc" } }),
     prisma.supplier.findMany({ orderBy: { id: "asc" } }),
     prisma.purchase.findMany({ orderBy: { id: "desc" } }),
-    prisma.sale.findMany({ orderBy: { id: "desc" } }),
+    prisma.sale.findMany({
+      include: { product: { select: { name: true } } },
+      orderBy: { id: "desc" },
+    }),
     prisma.customer.findMany({ orderBy: { id: "asc" } }),
     prisma.warranty.findMany({ orderBy: { id: "desc" } }),
     prisma.stockMovement.findMany({ orderBy: { id: "desc" } }),
     prisma.user.findMany({ orderBy: { id: "asc" } }),
   ]);
 
+  const supplierItemTotals = new Map<number | string, number>();
+  purchases.forEach((purchase) => {
+    if (purchase.supplierId != null) {
+      supplierItemTotals.set(
+        purchase.supplierId,
+        (supplierItemTotals.get(purchase.supplierId) ?? 0) + purchase.items,
+      );
+    }
+    supplierItemTotals.set(
+      purchase.supplierName,
+      (supplierItemTotals.get(purchase.supplierName) ?? 0) + purchase.items,
+    );
+  });
+
   return {
     products: products.map((product) => ({
       id: product.id,
       sku: product.sku,
       name: product.name,
+      categoryId: product.categoryId,
       category: product.category?.name ?? "Uncategorized",
       brand: product.brand,
       price: num(product.price),
@@ -133,19 +151,27 @@ export async function getShopData(): Promise<ShopData> {
       email: supplier.email,
       phone: supplier.phone,
       city: supplier.city,
-      products: supplier.products,
+      products:
+        supplierItemTotals.get(supplier.id) ??
+        supplierItemTotals.get(supplier.name) ??
+        0,
       status: supplier.status as ShopData["suppliers"][number]["status"],
     })),
-    purchases: purchases.map((purchase) => ({
+    purchases: [...purchases].sort(compareCodesDesc).map((purchase) => ({
       id: purchase.id,
+      supplierId: purchase.supplierId,
       supplier: purchase.supplierName,
       items: purchase.items,
       total: num(purchase.total),
       status: purchase.status as ShopData["purchases"][number]["status"],
     })),
-    sales: sales.map((sale) => ({
+    sales: [...sales].sort(compareCodesDesc).map((sale) => ({
       id: sale.id,
+      customerId: sale.customerId,
       customer: sale.customerName,
+      productId: sale.productId,
+      productName: sale.product?.name ?? "",
+      product: sale.product?.name ?? "",
       items: sale.items,
       total: num(sale.total),
       status: sale.status as ShopData["sales"][number]["status"],
@@ -160,16 +186,19 @@ export async function getShopData(): Promise<ShopData> {
       spent: num(customer.spent),
       type: customer.type as ShopData["customers"][number]["type"],
     })),
-    warranties: warranties.map((warranty) => ({
+    warranties: [...warranties].sort(compareCodesDesc).map((warranty) => ({
       id: warranty.id,
+      productId: warranty.productId,
       product: warranty.productName,
       serial: warranty.serial,
+      customerId: warranty.customerId,
       customer: warranty.customerName,
       status: warranty.status as ShopData["warranties"][number]["status"],
     })),
     stockMovements: stockMovements.map((movement) => ({
       id: movement.id,
       type: movement.type as ShopData["stockMovements"][number]["type"],
+      productId: movement.productId,
       product: movement.productName,
       qty: movement.qty,
       ref: movement.ref,
@@ -185,38 +214,63 @@ export async function getShopData(): Promise<ShopData> {
   };
 }
 
+interface SaleEffectsRow {
+  id: string;
+  status: string;
+  productId: number | null;
+  customerId: number | null;
+  customerName?: string;
+  items: number;
+  total: Prisma.Decimal;
+}
+
+async function reverseSaleEffects(
+  tx: Tx,
+  sale: SaleEffectsRow,
+): Promise<{ id: number; name: string } | null> {
+  let restoredProduct: { id: number; name: string } | null = null;
+
+  if (sale.productId) {
+    const product = await tx.product.findUnique({
+      where: { id: sale.productId },
+    });
+    if (product) {
+      const stock = Math.max(0, product.stock + sale.items);
+      await tx.product.update({
+        where: { id: product.id },
+        data: { stock, status: productStatus(stock, product.minStock) },
+      });
+      restoredProduct = { id: product.id, name: product.name };
+    }
+  }
+
+  const customer = sale.customerId
+    ? await tx.customer.findUnique({ where: { id: sale.customerId } })
+    : sale.customerName
+      ? await tx.customer.findFirst({
+          where: { name: { equals: sale.customerName, mode: "insensitive" } },
+        })
+      : null;
+
+  if (customer) {
+    await tx.customer.update({
+      where: { id: customer.id },
+      data: {
+        orders: Math.max(0, customer.orders - 1),
+        spent: Math.max(0, num(customer.spent) - num(sale.total)),
+      },
+    });
+  }
+
+  return restoredProduct;
+}
+
 async function deleteSale(tx: Tx, id: string): Promise<void> {
   const sale = await tx.sale.findUnique({ where: { id } });
   if (!sale) return;
 
   if (sale.status === "completed") {
-    if (sale.productId) {
-      const product = await tx.product.findUnique({
-        where: { id: sale.productId },
-      });
-      if (product) {
-        const stock = Math.max(0, product.stock + sale.items);
-        await tx.product.update({
-          where: { id: product.id },
-          data: { stock, status: productStatus(stock, product.minStock) },
-        });
-      }
-    }
-
-    if (sale.customerId) {
-      const customer = await tx.customer.findUnique({
-        where: { id: sale.customerId },
-      });
-      if (customer) {
-        await tx.customer.update({
-          where: { id: customer.id },
-          data: {
-            orders: Math.max(0, customer.orders - 1),
-            spent: Math.max(0, num(customer.spent) - num(sale.total)),
-          },
-        });
-      }
-    }
+    await reverseSaleEffects(tx, sale);
   }
 
   await tx.stockMovement.deleteMany({ where: { ref: sale.id } });
@@ -465,7 +519,26 @@ async function createSale(draft: SaleDraft): Promise<void> {
 }
 
 async function refundSale(id: string): Promise<void> {
-  await prisma.sale.update({ where: { id }, data: { status: "refunded" } });
+  await prisma.$transaction(async (tx) => {
+    const sale = await tx.sale.findUnique({ where: { id } });
+    if (!sale || sale.status !== "completed") return;
+
+    const product = await reverseSaleEffects(tx, sale);
+    await tx.sale.update({ where: { id }, data: { status: "refunded" } });
+
+    if (product) {
+      await tx.stockMovement.create({
+        data: {
+          type: "in",
+          productId: product.id,
+          productName: product.name,
+          qty: sale.items,
+          ref: sale.id,
+          user: "Admin",
+        },
+      });
+    }
+  });
 }
 
 async function saveCustomer(
@@ -515,19 +588,23 @@ async function saveWarranty(
   id?: string | null,
 ): Promise<void> {
   await prisma.$transaction(async (tx) => {
-    const product = await tx.product.findFirst({
-      where: { name: { equals: draft.product, mode: "insensitive" } },
-    });
-    const customer = await tx.customer.findFirst({
-      where: { name: { equals: draft.customer, mode: "insensitive" } },
-    });
+    const product = draft.productId
+      ? await tx.product.findUnique({ where: { id: draft.productId } })
+      : await tx.product.findFirst({
+          where: { name: { equals: draft.product, mode: "insensitive" } },
+        });
+    const customer = draft.customerId
+      ? await tx.customer.findUnique({ where: { id: draft.customerId } })
+      : await tx.customer.findFirst({
+          where: { name: { equals: draft.customer, mode: "insensitive" } },
+        });
 
     const data = {
       productId: product?.id ?? null,
-      productName: draft.product,
-      serial: draft.serial,
+      productName: product?.name ?? draft.product,
+      serial: draft.serial.trim(),
       customerId: customer?.id ?? null,
-      customerName: draft.customer,
+      customerName: customer?.name ?? draft.customer,
     };
 
     if (id != null) {
