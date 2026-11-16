@@ -47,13 +47,19 @@ export function PurchaseViewModal({
           >
             Close
           </button>
-          <button
-            type="button"
-            onClick={onReceive}
-            className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg"
-          >
-            Mark Received
-          </button>
+          {purchase.status !== "received" ? (
+            <button
+              type="button"
+              onClick={onReceive}
+              className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg"
+            >
+              Mark Received
+            </button>
+          ) : (
+            <span className="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed">
+              Received
+            </span>
+          )}
         </div>
       </div>
     </Modal>

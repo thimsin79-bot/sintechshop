@@ -10,7 +10,7 @@ interface FormActionsProps {
 }
 
 const variantClass: Record<FormActionVariant, string> = {
-  primary: "bg-brand-600 hover:bg-brand-700",
+  primary: "btn-dark-modern transition",
   success: "bg-emerald-600 hover:bg-emerald-700",
   danger: "bg-rose-600 hover:bg-rose-700",
 };

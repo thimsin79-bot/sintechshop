@@ -6,17 +6,17 @@ interface ModalHeaderProps {
 
 export function ModalHeader({ title, subtitle, onClose }: ModalHeaderProps) {
   return (
-    <div className="flex items-start justify-between mb-5">
+    <div className="header-dark -mx-6 -mt-6 mb-5 px-6 py-4 rounded-t-2xl flex items-start justify-between">
       <div>
-        <h3 className="text-lg font-semibold">{title}</h3>
+        <h3 className="text-lg font-semibold text-white">{title}</h3>
         {subtitle ? (
-          <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
         ) : null}
       </div>
       <button
         type="button"
         onClick={onClose}
-        className="text-slate-400 hover:text-slate-600"
+        className="text-slate-400 hover:text-white transition-colors"
         aria-label="Close"
       >
         <i className="fas fa-times" />

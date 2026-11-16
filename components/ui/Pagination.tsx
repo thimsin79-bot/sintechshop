@@ -73,7 +73,7 @@ export function Pagination({
               className={cn(
                 "min-w-8 px-2.5 py-1.5 text-sm rounded-lg transition-colors",
                 value === page
-                  ? "bg-brand-600 text-white font-medium"
+                  ? "btn-dark-modern font-medium"
                   : "text-slate-600 hover:bg-slate-100",
               )}
               aria-current={value === page ? "page" : undefined}

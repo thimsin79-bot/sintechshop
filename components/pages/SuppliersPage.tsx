@@ -40,6 +40,22 @@ export function SuppliersPage() {
     `${query.trim().toLowerCase()}|${statusFilter}`,
   );
 
+  const supplierStats = new Map<
+    string | number,
+    { orders: number; products: number }
+  >();
+  data.purchases.forEach((purchase) => {
+    const keys = [purchase.supplierId, purchase.supplier].filter(
+      (k): k is string | number => k != null,
+    );
+    keys.forEach((key) => {
+      const current = supplierStats.get(key) ?? { orders: 0, products: 0 };
+      current.orders += 1;
+      current.products += purchase.items;
+      supplierStats.set(key, current);
+    });
+  });
+
   function handleDelete() {
     if (!deleting) return;
     deleteRecord("suppliers", deleting.id);
@@ -102,36 +118,46 @@ export function SuppliersPage() {
               </tr>
             </thead>
             <tbody>
-              {pagination.pageItems.map((supplier) => (
-                <tr
-                  key={supplier.id}
-                  className="table-row border-t border-slate-50"
-                >
-                  <td className="px-5 py-3.5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold">
-                        {initials(supplier.name)}
-                      </div>
-                      <div>
-                        <div className="font-medium">{supplier.name}</div>
-                        <div className="text-xs text-slate-500">
-                          {supplier.contact}
+              {pagination.pageItems.map((supplier) => {
+                const stats = supplierStats.get(supplier.id) ?? supplierStats.get(supplier.name) ?? {
+                  orders: 0,
+                  products: supplier.products ?? 0,
+                };
+                return (
+                  <tr
+                    key={supplier.id}
+                    className="table-row border-t border-slate-50"
+                  >
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center text-xs font-bold">
+                          {initials(supplier.name)}
+                        </div>
+                        <div>
+                          <div className="font-medium">{supplier.name}</div>
+                          <div className="text-xs text-slate-500">
+                            {supplier.contact}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">
-                    <div className="text-slate-700">{supplier.email}</div>
-                    <div className="text-xs text-slate-500">
-                      {supplier.phone}
-                    </div>
-                  </td>
-                  <td className="px-5 py-3.5">{supplier.city}</td>
-                  <td className="px-5 py-3.5">
-                    <span className="badge bg-slate-100 text-slate-600">
-                      {supplier.products} linked
-                    </span>
-                  </td>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="text-slate-700">{supplier.email}</div>
+                      <div className="text-xs text-slate-500">
+                        {supplier.phone}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5">{supplier.city}</td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="badge bg-slate-100 text-slate-700 font-medium">
+                          {stats.products} items
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          ({stats.orders} {stats.orders === 1 ? "order" : "orders"})
+                        </span>
+                      </div>
+                    </td>
                   <td className="px-5 py-3.5">
                     <span
                       className={`badge ${
@@ -169,7 +195,8 @@ export function SuppliersPage() {
                     </button>
                   </td>
                 </tr>
-              ))}
+              );
+            })}
               {!filtered.length ? (
                 <tr>
                   <td

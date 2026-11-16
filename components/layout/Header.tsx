@@ -14,9 +14,9 @@ import { useData } from "@/lib/store";
 import { DatabaseStatusPill } from "@/components/system/DatabaseStatus";
 
 const TONE_STYLES: Record<AppNotification["tone"], string> = {
-  danger: "bg-rose-50 text-rose-600",
-  warning: "bg-amber-50 text-amber-600",
-  info: "bg-sky-50 text-sky-600",
+  danger: "bg-rose-500/15 text-rose-300",
+  warning: "bg-amber-500/15 text-amber-300",
+  info: "bg-sky-500/15 text-sky-300",
 };
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
@@ -123,19 +123,19 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   }
 
   return (
-    <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shadow-sm z-20 shrink-0">
+    <header className="header-dark h-16 border-b border-slate-800 flex items-center justify-between px-6 shadow-lg z-20 shrink-0">
       <div className="flex items-center gap-4">
         <button
           type="button"
           onClick={onMenuClick}
-          className="lg:hidden text-slate-500 hover:text-slate-700"
+          className="lg:hidden text-slate-300 hover:text-white"
           aria-label="Toggle navigation"
         >
           <i className="fas fa-bars text-lg" />
         </button>
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">{meta.title}</h2>
-          <p className="text-xs text-slate-500">{meta.subtitle}</p>
+          <h2 className="text-lg font-semibold text-white">{meta.title}</h2>
+          <p className="text-xs text-slate-400">{meta.subtitle}</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
@@ -146,14 +146,14 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search products, SKUs..."
-            className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent w-64 bg-slate-50"
+            className="pl-9 pr-4 py-2 text-sm border border-white/10 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-400 focus:border-transparent w-64 bg-white/5 text-white placeholder:text-slate-400"
           />
         </form>
         <DatabaseStatusPill className="hidden sm:inline-flex" />
         <div className="relative" ref={panelRef}>
           <button
             type="button"
-            className="relative p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg"
+            className="relative p-2 text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
             onClick={() => setOpen((value) => !value)}
             aria-label="Notifications"
             aria-haspopup="menu"
@@ -169,14 +169,14 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
           {open ? (
             <div
               role="menu"
-              className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-xl border border-slate-200 shadow-xl overflow-hidden z-50"
+              className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 text-slate-200 rounded-xl border border-slate-800 shadow-2xl overflow-hidden z-50"
             >
-              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-100">
+              <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-800">
                 <div>
-                  <p className="text-sm font-semibold text-slate-900">
+                  <p className="text-sm font-semibold text-white">
                     Notifications
                   </p>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     {unread} unread · {notifications.length} total
                   </p>
                 </div>
@@ -185,7 +185,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
                     type="button"
                     onClick={markAllRead}
                     disabled={unread === 0}
-                    className="text-xs font-medium text-brand-600 hover:text-brand-700 disabled:text-slate-300 disabled:cursor-not-allowed"
+                    className="text-xs font-medium text-brand-400 hover:text-brand-300 disabled:text-slate-600 disabled:cursor-not-allowed"
                   >
                     Mark all read
                   </button>
@@ -193,7 +193,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
                     type="button"
                     onClick={clearAll}
                     disabled={notifications.length === 0}
-                    className="text-xs font-medium text-slate-500 hover:text-rose-600 disabled:text-slate-300 disabled:cursor-not-allowed"
+                    className="text-xs font-medium text-slate-400 hover:text-rose-400 disabled:text-slate-600 disabled:cursor-not-allowed"
                   >
                     Clear all
                   </button>
@@ -206,7 +206,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
                     return (
                       <div
                         key={item.id}
-                        className="group flex items-start gap-1 border-b border-slate-50 last:border-0 hover:bg-slate-50"
+                        className="group flex items-start gap-1 border-b border-slate-800 last:border-0 hover:bg-slate-800/60"
                       >
                         <button
                           type="button"
@@ -221,23 +221,23 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
                           </span>
                           <span className="min-w-0 flex-1">
                             <span className="flex items-center gap-2">
-                              <span className="text-sm font-medium text-slate-800 truncate">
+                              <span className="text-sm font-medium text-slate-100 truncate">
                                 {item.title}
                               </span>
                               {isRead ? null : (
-                                <span className="w-1.5 h-1.5 rounded-full bg-brand-500 shrink-0" />
+                                <span className="w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
                               )}
                             </span>
-                            <span className="block text-xs text-slate-500 mt-0.5 truncate">
+                            <span className="block text-xs text-slate-400 mt-0.5 truncate">
                               {item.detail}
                             </span>
                           </span>
-                          <i className="fas fa-chevron-right text-[10px] text-slate-300 mt-2 shrink-0" />
+                          <i className="fas fa-chevron-right text-[10px] text-slate-600 mt-2 shrink-0" />
                         </button>
                         <button
                           type="button"
                           onClick={() => dismiss(item.id)}
-                          className="p-2 mr-1 mt-1 text-slate-300 hover:text-rose-600 opacity-0 group-hover:opacity-100 focus:opacity-100"
+                          className="p-2 mr-1 mt-1 text-slate-600 hover:text-rose-400 opacity-0 group-hover:opacity-100 focus:opacity-100"
                           aria-label={`Dismiss ${item.title}`}
                           title="Dismiss"
                         >
@@ -248,20 +248,20 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
                   })
                 ) : (
                   <div className="px-6 py-10 text-center">
-                    <div className="w-12 h-12 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-3">
+                    <div className="w-12 h-12 rounded-full bg-emerald-500/15 text-emerald-300 flex items-center justify-center mx-auto mb-3">
                       <i className="fas fa-check" />
                     </div>
-                    <p className="text-sm font-medium text-slate-700">
+                    <p className="text-sm font-medium text-slate-200">
                       You&apos;re all caught up
                     </p>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-slate-400 mt-1">
                       New stock, purchase, and warranty alerts appear here.
                     </p>
                   </div>
                 )}
               </div>
               {notifications.length ? (
-                <div className="px-4 py-2 border-t border-slate-100 text-[11px] text-slate-400">
+                <div className="px-4 py-2 border-t border-slate-800 text-[11px] text-slate-500">
                   Click a notification to open the related page.
                 </div>
               ) : null}

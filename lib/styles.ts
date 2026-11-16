@@ -7,7 +7,7 @@ export const invalidInputClass =
 export const labelClass = "block text-sm font-medium text-slate-700 mb-1";
 
 export const primaryButton =
-  "inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-sm transition";
+  "btn-dark-modern inline-flex items-center gap-2 text-sm font-medium px-4 py-2.5 rounded-xl transition";
 
 export const secondaryButton =
   "inline-flex items-center gap-2 border border-slate-200 hover:bg-slate-50 text-slate-600 text-sm font-medium px-4 py-2.5 rounded-xl transition";

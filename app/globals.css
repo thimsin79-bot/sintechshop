@@ -27,6 +27,30 @@ body {
   background-attachment: fixed;
 }
 
+.header-dark {
+  background: linear-gradient(90deg, #0b1220 0%, #1e293b 100%);
+  color: #ffffff;
+}
+
+.card-dark {
+  background: linear-gradient(135deg, #0b1220 0%, #1e293b 100%);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  box-shadow: 0 12px 30px -14px rgba(2, 6, 23, 0.6);
+  color: #e2e8f0;
+}
+
+main table thead {
+  background: linear-gradient(90deg, #0b1220 0%, #1e293b 100%);
+}
+
+main table thead th {
+  color: #cbd5e1;
+}
+
+main table thead tr {
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
 .sidebar-link.active,
 .btn-dark-modern {
   background: linear-gradient(90deg, #0b1220 0%, #1e293b 100%);

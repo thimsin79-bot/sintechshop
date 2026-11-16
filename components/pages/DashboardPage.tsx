@@ -75,16 +75,18 @@ export function DashboardPage() {
     });
 
     data.sales.forEach((sale) => {
+      const prodName = sale.productName || sale.product;
       if (
         sale.id.toLowerCase().includes(q) ||
-        sale.customer.toLowerCase().includes(q)
+        sale.customer.toLowerCase().includes(q) ||
+        (prodName && prodName.toLowerCase().includes(q))
       ) {
         found.push({
           type: "Invoice",
           icon: "fa-receipt",
           color: "bg-emerald-50 text-emerald-600",
           title: sale.id,
-          subtitle: `${sale.customer} · ${formatCurrency(sale.total)} · ${sale.status}`,
+          subtitle: `${sale.customer}${prodName ? ` · ${prodName}` : ""} · ${formatCurrency(sale.total)} · ${sale.status}`,
           href: "/sales",
         });
       }
@@ -234,32 +236,32 @@ export function DashboardPage() {
           label="Total Products"
           value={String(totalProducts)}
           note="In catalog"
-          noteClass="text-emerald-600"
+          noteClass="text-emerald-400"
           icon="fa-box"
-          iconClass="bg-brand-50 text-brand-600"
+          iconClass="bg-white/10 text-brand-300"
         />
         <StatCard
           label="Low Stock Alerts"
           value={String(lowStockProducts.length)}
           note="Needs restocking"
-          valueClass="text-amber-600"
+          valueClass="text-amber-400"
           icon="fa-exclamation-triangle"
-          iconClass="bg-amber-50 text-amber-600"
+          iconClass="bg-amber-500/15 text-amber-300"
         />
         <StatCard
           label="Total Sales"
           value={formatCurrency(totalSales)}
           note="Completed invoices"
-          noteClass="text-emerald-600"
+          noteClass="text-emerald-400"
           icon="fa-dollar-sign"
-          iconClass="bg-emerald-50 text-emerald-600"
+          iconClass="bg-emerald-500/15 text-emerald-300"
         />
         <StatCard
           label="Inventory Value"
           value={formatCurrency(totalStockValue)}
           note="At cost price"
           icon="fa-warehouse"
-          iconClass="bg-violet-50 text-violet-600"
+          iconClass="bg-violet-500/15 text-violet-300"
         />
       </div>
 
@@ -267,12 +269,11 @@ export function DashboardPage() {
         <div className="xl:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-slate-800">Sales Overview</h3>
-            <select className="text-sm border border-slate-200 rounded-lg px-3 py-1.5 bg-slate-50">
-              <option>Last 7 days</option>
-              <option>Last 30 days</option>
-            </select>
+            <span className="text-xs text-slate-500">
+              Recent completed invoices
+            </span>
           </div>
-          <SalesChart />
+          <SalesChart sales={data.sales} />
         </div>
 
         <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
@@ -430,8 +431,8 @@ function StatCard({
   label,
   value,
   note,
-  valueClass = "",
-  noteClass = "text-slate-500",
+  valueClass = "text-white",
+  noteClass = "text-slate-400",
   icon,
   iconClass,
 }: {
@@ -444,10 +445,10 @@ function StatCard({
   iconClass: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm card-hover">
+    <div className="card-dark rounded-2xl p-5 card-hover">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-sm text-slate-500 font-medium">{label}</p>
+          <p className="text-sm text-slate-400 font-medium">{label}</p>
           <p className={`text-2xl font-bold mt-1 ${valueClass}`}>{value}</p>
           <p className={`text-xs mt-1 ${noteClass}`}>
             <i className="fas fa-arrow-up mr-1" />

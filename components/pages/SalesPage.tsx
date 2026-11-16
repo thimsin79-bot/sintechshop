@@ -64,6 +64,7 @@ export function SalesPage() {
               <tr className="text-left">
                 <th className="px-5 py-3.5 font-medium">Invoice</th>
                 <th className="px-5 py-3.5 font-medium">Customer</th>
+                <th className="px-5 py-3.5 font-medium">Product</th>
                 <th className="px-5 py-3.5 font-medium">Items</th>
                 <th className="px-5 py-3.5 font-medium">Total</th>
                 <th className="px-5 py-3.5 font-medium">Payment</th>
@@ -81,6 +82,9 @@ export function SalesPage() {
                     {sale.id}
                   </td>
                   <td className="px-5 py-3.5">{sale.customer}</td>
+                  <td className="px-5 py-3.5 text-slate-700">
+                    {sale.productName || sale.product || "—"}
+                  </td>
                   <td className="px-5 py-3.5">{sale.items}</td>
                   <td className="px-5 py-3.5 font-semibold">
                     {formatCurrency(sale.total)}
@@ -138,7 +142,7 @@ export function SalesPage() {
               {!data.sales.length ? (
                 <tr>
                   <td
-                    colSpan={7}
+                    colSpan={8}
                     className="px-5 py-10 text-center text-slate-500"
                   >
                     No sales yet
