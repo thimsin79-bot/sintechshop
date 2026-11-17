@@ -1,4 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { auth } from "@/lib/auth-server";
 import {
   getShopData,
@@ -56,6 +57,20 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof StoreError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      if (error.code === "P2002") {
+        return NextResponse.json(
+          { error: "A record with this unique value already exists." },
+          { status: 400 },
+        );
+      }
+      if (error.code === "P2025") {
+        return NextResponse.json(
+          { error: "The record no longer exists. Refresh and try again." },
+          { status: 400 },
+        );
+      }
     }
     console.error(`Store action "${body.action}" failed`, error);
     return NextResponse.json(

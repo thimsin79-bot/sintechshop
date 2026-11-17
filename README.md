@@ -185,6 +185,119 @@ prisma/
 legacy/                   Original standalone HTML/CSS/JS implementation
 ```
 
+## Entity Relationship Diagram
+
+The diagram below mirrors `prisma/schema.prisma` exactly. Every foreign key is nullable and uses `onDelete: SetNull`, so deleting a parent row keeps historical rows through the stored name snapshots (`supplierName`, `customerName`, `productName`).
+
+```mermaid
+erDiagram
+    Category |o--o{ Product : categorizes
+    Supplier |o--o{ Purchase : supplies
+    Customer |o--o{ Sale : places
+    Product  |o--o{ Sale : "sold as"
+    Product  |o--o{ Warranty : "covered by"
+    Customer |o--o{ Warranty : owns
+    Product  |o--o{ StockMovement : moves
+
+    Category {
+        int    id          PK
+        string name        UK
+        string description
+    }
+
+    Product {
+        int     id         PK
+        string  sku        UK
+        string  name
+        int     categoryId FK
+        string  brand
+        decimal price
+        decimal cost
+        int     stock
+        int     minStock
+        int     warranty
+        string  status
+    }
+
+    Supplier {
+        int    id      PK
+        string name    UK
+        string contact
+        string email
+        string phone
+        string city
+        int    products
+        string status
+    }
+
+    Purchase {
+        string  id           PK
+        int     supplierId   FK
+        string  supplierName
+        int     items
+        decimal total
+        string  status
+    }
+
+    Customer {
+        int     id    PK
+        string  name
+        string  email
+        string  phone
+        int     orders
+        decimal spent
+        string  type
+    }
+
+    Sale {
+        string  id           PK
+        int     customerId   FK
+        string  customerName
+        int     productId    FK
+        int     items
+        decimal total
+        string  status
+        string  payment
+    }
+
+    Warranty {
+        string id           PK
+        int    productId    FK
+        string productName
+        string serial
+        int    customerId   FK
+        string customerName
+        string status
+    }
+
+    StockMovement {
+        int    id          PK
+        string type
+        int    productId   FK
+        string productName
+        int    qty
+        string ref
+        string user
+    }
+
+    User {
+        int    id     PK
+        string name
+        string email  UK
+        string role
+        string status
+    }
+```
+
+Relationship notes:
+
+- `User` is intentionally standalone: accounts and sessions live in Neon Auth, and this table only backs the in-app user list and role labels.
+- `Sale` stores one product per row (`productId` + `items` quantity); there is no sale line-item table. `Purchase` likewise stores an `items` count with no per-product link.
+- `Sale` has no `productName` snapshot column, so deleting a product clears the link and reports fall back to "Deleted product". `Purchase`, `Warranty`, and `StockMovement` do keep name snapshots.
+- `Supplier.products` is stored but unused: the API derives each supplier's product count from its purchase `items` when reading data.
+- `Category.name`, `Product.sku`, `Supplier.name`, and `User.email` are unique. `Warranty.serial` is not unique.
+- There is no `prisma/migrations` directory; the schema is applied with `npm run db:push`.
+
 ## Data and Persistence
 
 - Accounts and sessions are managed by Neon Auth. The browser talks to the Next.js auth handler at `/api/auth/*`, which proxies requests to your Managed Better Auth instance.
