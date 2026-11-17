@@ -222,6 +222,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (!customer || !product) return "Select a customer and product";
       if (draft.qty <= 0) return "Quantity must be greater than zero";
+      if (
+        !Number.isFinite(draft.discount) ||
+        draft.discount < 0 ||
+        draft.discount > 100
+      ) {
+        return "Discount must be between 0 and 100";
+      }
       if (product.stock < draft.qty) {
         return `Only ${product.stock} units of ${product.name} in stock`;
       }
@@ -249,6 +256,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
       if (!customer || !product) return "Select a customer and product";
       if (draft.qty <= 0) return "Quantity must be greater than zero";
+      if (
+        !Number.isFinite(draft.discount) ||
+        draft.discount < 0 ||
+        draft.discount > 100
+      ) {
+        return "Discount must be between 0 and 100";
+      }
 
       const restored = sale.productId === product.id ? sale.items : 0;
       const available = product.stock + restored;

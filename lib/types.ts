@@ -57,6 +57,8 @@ export interface Sale {
   product?: string;
   productName?: string;
   items: number;
+  subtotal: number;
+  discount: number;
   total: number;
   status: SaleStatus;
   payment: PaymentMethod;
@@ -138,5 +140,6 @@ export type SaleDraft = {
   customerId: number;
   productId: number;
   qty: number;
+  discount: number;
   payment: PaymentMethod;
 };

@@ -14,7 +14,12 @@ import type {
   UserDraft,
   WarrantyDraft,
 } from "@/lib/types";
-import { compareCodesDesc, nextCode, nextPurchaseId } from "@/lib/utils";
+import {
+  applyDiscount,
+  compareCodesDesc,
+  nextCode,
+  nextPurchaseId,
+} from "@/lib/utils";
 
 type Tx = Prisma.TransactionClient;
 
@@ -173,6 +178,8 @@ export async function getShopData(): Promise<ShopData> {
       productName: sale.product?.name ?? "",
       product: sale.product?.name ?? "",
       items: sale.items,
+      subtotal: num(sale.subtotal),
+      discount: num(sale.discount),
       total: num(sale.total),
       status: sale.status as ShopData["sales"][number]["status"],
       payment: sale.payment as ShopData["sales"][number]["payment"],
@@ -457,6 +464,10 @@ async function receivePurchase(id: string): Promise<void> {
 
 async function createSale(draft: SaleDraft): Promise<void> {
   if (draft.qty <= 0) throw new StoreError("Quantity must be greater than zero");
+  const discount = num(draft.discount);
+  if (discount < 0 || discount > 100) {
+    throw new StoreError("Discount must be between 0 and 100");
+  }
 
   await prisma.$transaction(async (tx) => {
     const customer = await tx.customer.findUnique({
@@ -476,7 +487,8 @@ async function createSale(draft: SaleDraft): Promise<void> {
     }
 
     const id = await nextSaleId(tx);
-    const total = num(product.price) * draft.qty;
+    const subtotal = num(product.price) * draft.qty;
+    const total = applyDiscount(subtotal, discount);
 
     const stock = product.stock - draft.qty;
     await tx.product.update({
@@ -499,6 +511,8 @@ async function createSale(draft: SaleDraft): Promise<void> {
         customerName: customer.name,
         productId: product.id,
         items: draft.qty,
+        subtotal,
+        discount,
         total,
         status: "completed",
         payment: draft.payment,
@@ -520,6 +534,10 @@ async function createSale(draft: SaleDraft): Promise<void> {
 
 async function updateSale(id: string, draft: SaleDraft): Promise<void> {
   if (draft.qty <= 0) throw new StoreError("Quantity must be greater than zero");
+  const discount = num(draft.discount);
+  if (discount < 0 || discount > 100) {
+    throw new StoreError("Discount must be between 0 and 100");
+  }
 
   await prisma.$transaction(async (tx) => {
     const sale = await tx.sale.findUnique({ where: { id } });
@@ -551,7 +569,8 @@ async function updateSale(id: string, draft: SaleDraft): Promise<void> {
       );
     }
 
-    const total = num(product.price) * draft.qty;
+    const subtotal = num(product.price) * draft.qty;
+    const total = applyDiscount(subtotal, discount);
     const stock = restoredProduct.stock - draft.qty;
     await tx.product.update({
       where: { id: product.id },
@@ -579,6 +598,8 @@ async function updateSale(id: string, draft: SaleDraft): Promise<void> {
         customerName: customer.name,
         productId: product.id,
         items: draft.qty,
+        subtotal,
+        discount,
         total,
         payment: draft.payment,
       },

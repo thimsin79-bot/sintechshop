@@ -11,7 +11,7 @@ import { useToast } from "@/lib/toast";
 import { useForm } from "@/lib/useForm";
 import { validateSale } from "@/lib/validation";
 import { inputClass } from "@/lib/styles";
-import { formatCurrency, nextCode } from "@/lib/utils";
+import { applyDiscount, formatCurrency, nextCode } from "@/lib/utils";
 import type { PaymentMethod, Sale, SaleDraft } from "@/lib/types";
 
 interface SaleModalProps {
@@ -36,6 +36,7 @@ export function SaleModal({ open, onClose, sale }: SaleModalProps) {
         customerId: data.customers[0]?.id ?? 0,
         productId: data.products[0]?.id ?? 0,
         qty: 1,
+        discount: 0,
         payment: "card",
       },
       (draft) => validateSale(draft, availableProducts, data.customers),
@@ -58,6 +59,7 @@ export function SaleModal({ open, onClose, sale }: SaleModalProps) {
           data.products[0]?.id ??
           0,
         qty: sale.items,
+        discount: sale.discount ?? 0,
         payment: sale.payment,
       });
       return;
@@ -66,11 +68,14 @@ export function SaleModal({ open, onClose, sale }: SaleModalProps) {
       customerId: data.customers[0]?.id ?? 0,
       productId: data.products[0]?.id ?? 0,
       qty: 1,
+      discount: 0,
       payment: "card",
     });
   }, [open, sale, data.customers, data.products, reset]);
 
   const product = data.products.find((item) => item.id === values.productId);
+  const subtotal = product ? product.price * Math.max(values.qty, 0) : 0;
+  const discountedTotal = applyDiscount(subtotal, values.discount);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     submit(event, (draft) => {
@@ -136,7 +141,7 @@ export function SaleModal({ open, onClose, sale }: SaleModalProps) {
               )}
             </select>
           </FormField>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FormField label="Quantity" required error={errors.qty}>
               <input
                 type="number"
@@ -144,6 +149,19 @@ export function SaleModal({ open, onClose, sale }: SaleModalProps) {
                 value={values.qty}
                 onChange={(event) =>
                   setValue("qty", Number(event.target.value))
+                }
+                className={inputClass}
+              />
+            </FormField>
+            <FormField label="Discount (%)" error={errors.discount}>
+              <input
+                type="number"
+                min={0}
+                max={100}
+                step={0.01}
+                value={values.discount}
+                onChange={(event) =>
+                  setValue("discount", Number(event.target.value))
                 }
                 className={inputClass}
               />
@@ -163,12 +181,24 @@ export function SaleModal({ open, onClose, sale }: SaleModalProps) {
             </FormField>
           </div>
           {product ? (
-            <p className="text-xs text-slate-500">
-              Line total:{" "}
-              <span className="font-semibold text-slate-700">
-                {formatCurrency(product.price * Math.max(values.qty, 0))}
-              </span>
-            </p>
+            <div className="rounded-xl bg-slate-50 p-3 text-xs space-y-1.5">
+              <div className="flex justify-between text-slate-500">
+                <span>Subtotal</span>
+                <span>{formatCurrency(subtotal)}</span>
+              </div>
+              {discountedTotal < subtotal ? (
+                <div className="flex justify-between text-slate-500">
+                  <span>Discount ({values.discount}%)</span>
+                  <span className="text-emerald-600">
+                    -{formatCurrency(subtotal - discountedTotal)}
+                  </span>
+                </div>
+              ) : null}
+              <div className="flex justify-between border-t border-slate-200 pt-1.5 font-semibold text-slate-700">
+                <span>Total</span>
+                <span>{formatCurrency(discountedTotal)}</span>
+              </div>
+            </div>
           ) : null}
           <FormError message={formError} />
           <FormActions

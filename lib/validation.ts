@@ -280,6 +280,10 @@ export function validateSale(
     errors.qty = `Only ${product.stock} units in stock`;
   }
 
+  if (!isNonNegative(form.discount) || form.discount > 100) {
+    errors.discount = "Discount must be between 0 and 100";
+  }
+
   return errors;
 }
 

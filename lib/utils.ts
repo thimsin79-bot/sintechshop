@@ -6,6 +6,11 @@ export function formatCurrency(value: number): string {
   }).format(Number(value) || 0);
 }
 
+export function applyDiscount(subtotal: number, discountPercent: number): number {
+  const percent = Math.min(100, Math.max(0, Number(discountPercent) || 0));
+  return Math.round(Number(subtotal) * (1 - percent / 100) * 100) / 100;
+}
+
 export function initials(name: string): string {
   return String(name || "?")
     .split(" ")

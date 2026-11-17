@@ -89,6 +89,11 @@ export function SalesPage() {
                   <td className="px-5 py-3.5">{sale.items}</td>
                   <td className="px-5 py-3.5 font-semibold">
                     {formatCurrency(sale.total)}
+                    {sale.discount > 0 ? (
+                      <span className="block text-xs font-normal text-emerald-600">
+                        {sale.discount}% off
+                      </span>
+                    ) : null}
                   </td>
                   <td className="px-5 py-3.5 capitalize">{sale.payment}</td>
                   <td className="px-5 py-3.5">

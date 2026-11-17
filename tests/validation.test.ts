@@ -99,6 +99,7 @@ test("validateSale requires an in-stock product and customer", () => {
     customerId: customer.id,
     productId: product.id,
     qty: 2,
+    discount: 0,
     payment: "card",
   };
 
@@ -106,6 +107,10 @@ test("validateSale requires an in-stock product and customer", () => {
   assert.equal(
     validateSale({ ...base, qty: 11 }, [product], [customer]).qty,
     "Only 10 units in stock",
+  );
+  assert.equal(
+    validateSale({ ...base, discount: 101 }, [product], [customer]).discount,
+    "Discount must be between 0 and 100",
   );
   assert.equal(
     validateSale({ ...base, customerId: 99 }, [product], [customer]).customerId,

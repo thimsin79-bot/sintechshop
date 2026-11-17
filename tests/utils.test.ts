@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
+  applyDiscount,
   compareCodesDesc,
   formatCurrency,
   initials,
@@ -40,6 +41,12 @@ test("compareCodesDesc sorts codes numerically in descending order", () => {
 
 test("formatCurrency formats USD amounts", () => {
   assert.equal(formatCurrency(1234), "$1,234");
+});
+
+test("applyDiscount returns the discounted total", () => {
+  assert.equal(applyDiscount(599, 10), 539.1);
+  assert.equal(applyDiscount(100, 0), 100);
+  assert.equal(applyDiscount(100, 100), 0);
 });
 
 test("initials derives up to two uppercase initials", () => {

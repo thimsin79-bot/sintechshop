@@ -23,6 +23,8 @@ export function SaleInvoiceModal({
   const contactLine = [profile.email, profile.phone]
     .filter(Boolean)
     .join(" · ");
+  const subtotal = sale.subtotal || sale.total;
+  const discountAmount = Math.max(0, subtotal - sale.total);
 
   return (
     <Modal open={open} onClose={onClose} printable className="max-w-2xl">
@@ -93,12 +95,24 @@ export function SaleInvoiceModal({
                 {sale.productName || sale.product || "Items purchased"}
               </td>
               <td className="py-3 text-center">{sale.items}</td>
-              <td className="py-3 text-right">{formatCurrency(sale.total)}</td>
+              <td className="py-3 text-right">{formatCurrency(subtotal)}</td>
             </tr>
           </tbody>
         </table>
         <div className="flex justify-end mt-4">
-          <div className="w-52 text-sm">
+          <div className="w-52 text-sm space-y-1">
+            <div className="flex justify-between text-slate-500">
+              <span>Subtotal</span>
+              <span>{formatCurrency(subtotal)}</span>
+            </div>
+            {discountAmount > 0 ? (
+              <div className="flex justify-between text-slate-500">
+                <span>Discount ({sale.discount}%)</span>
+                <span className="text-emerald-600">
+                  -{formatCurrency(discountAmount)}
+                </span>
+              </div>
+            ) : null}
             <div className="flex justify-between font-semibold text-base pt-2 border-t border-slate-200">
               <span>Total</span>
               <span>{formatCurrency(sale.total)}</span>

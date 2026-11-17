@@ -14,7 +14,7 @@ Application data is stored in Neon Postgres through Prisma, and accounts are man
 - Stock In / Out movements with quantity validation
 - Supplier management
 - Purchase orders with receiving status
-- Sales and invoices with printable invoice view and refund status
+- Sales and invoices with percentage discounts, printable invoice view, and refund status
 - Customer management with order history
 - Warranty registration and claims
 - Reports with category chart, sales metrics, and CSV exports
@@ -255,6 +255,8 @@ erDiagram
         string  customerName
         int     productId    FK
         int     items
+        decimal subtotal
+        decimal discount
         decimal total
         string  status
         string  payment
@@ -294,6 +296,7 @@ Relationship notes:
 - `User` is intentionally standalone: accounts and sessions live in Neon Auth, and this table only backs the in-app user list and role labels.
 - `Sale` stores one product per row (`productId` + `items` quantity); there is no sale line-item table. `Purchase` likewise stores an `items` count with no per-product link.
 - `Sale` has no `productName` snapshot column, so deleting a product clears the link and reports fall back to "Deleted product". `Purchase`, `Warranty`, and `StockMovement` do keep name snapshots.
+- `Sale.subtotal` stores the price before discount, `Sale.discount` stores the percentage (0–100), and `Sale.total` stores the final amount charged.
 - `Supplier.products` is stored but unused: the API derives each supplier's product count from its purchase `items` when reading data.
 - `Category.name`, `Product.sku`, `Supplier.name`, and `User.email` are unique. `Warranty.serial` is not unique.
 - There is no `prisma/migrations` directory; the schema is applied with `npm run db:push`.
@@ -317,7 +320,7 @@ The shared `useData()` hook exposes the same API as before, but each action disp
 
 - Product, category, supplier, customer, and user create/update actions
 - Purchase order creation and receiving
-- Sale creation, editing, refunds, and deletion (editing restores the original stock and customer totals before applying the new values)
+- Sale creation, editing, percentage discounts, refunds, and deletion (editing restores the original stock and customer totals before applying the new values)
 - Warranty registration and claims
 - Stock In / Out recording, editing, and deletion
 - Record deletion
