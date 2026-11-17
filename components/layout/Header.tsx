@@ -19,7 +19,12 @@ const TONE_STYLES: Record<AppNotification["tone"], string> = {
   info: "bg-sky-500/15 text-sky-300",
 };
 
-export function Header({ onMenuClick }: { onMenuClick: () => void }) {
+interface HeaderProps {
+  onMenuClick: () => void;
+  menuOpen?: boolean;
+}
+
+export function Header({ onMenuClick, menuOpen = false }: HeaderProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { data } = useData();
@@ -123,22 +128,28 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   }
 
   return (
-    <header className="header-dark h-16 border-b border-slate-800 flex items-center justify-between px-6 shadow-lg z-20 shrink-0">
-      <div className="flex items-center gap-4">
+    <header className="header-dark h-16 border-b border-slate-800 flex items-center justify-between gap-3 px-4 sm:px-6 shadow-lg z-20 shrink-0">
+      <div className="flex items-center gap-3 sm:gap-4 min-w-0">
         <button
           type="button"
           onClick={onMenuClick}
-          className="lg:hidden text-slate-300 hover:text-white"
+          className="lg:hidden shrink-0 text-slate-300 hover:text-white p-1 -ml-1"
           aria-label="Toggle navigation"
+          aria-controls="app-sidebar"
+          aria-expanded={menuOpen}
         >
           <i className="fas fa-bars text-lg" />
         </button>
-        <div>
-          <h2 className="text-lg font-semibold text-white">{meta.title}</h2>
-          <p className="text-xs text-slate-400">{meta.subtitle}</p>
+        <div className="min-w-0">
+          <h2 className="text-base sm:text-lg font-semibold text-white truncate">
+            {meta.title}
+          </h2>
+          <p className="hidden sm:block text-xs text-slate-400 truncate">
+            {meta.subtitle}
+          </p>
         </div>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <form onSubmit={handleSearch} className="relative hidden md:block">
           <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
           <input
@@ -169,7 +180,7 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
           {open ? (
             <div
               role="menu"
-              className="absolute right-0 mt-2 w-80 sm:w-96 bg-slate-900 text-slate-200 rounded-xl border border-slate-800 shadow-2xl overflow-hidden z-50"
+              className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-96 bg-slate-900 text-slate-200 rounded-xl border border-slate-800 shadow-2xl overflow-hidden z-50"
             >
               <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-slate-800">
                 <div>

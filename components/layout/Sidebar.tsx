@@ -25,8 +25,10 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
 
   return (
     <aside
+      id="app-sidebar"
+      aria-label="Sidebar"
       className={cn(
-        "w-64 shrink-0 bg-white border-r border-slate-200 flex-col shadow-sm z-30",
+        "w-64 shrink-0 bg-white border-r border-slate-200 flex-col shadow-sm z-40",
         open ? "flex fixed inset-y-0 left-0 lg:static" : "hidden lg:flex",
       )}
     >
@@ -43,16 +45,27 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
               <i className="fas fa-laptop text-lg" />
             </div>
           )}
-          <div>
-            <h1 className="font-bold text-lg leading-tight text-slate-900">
+          <div className="min-w-0">
+            <h1 className="font-bold text-lg leading-tight text-slate-900 truncate">
               {profile.name}
             </h1>
             <p className="text-xs text-slate-500">Inventory System</p>
           </div>
+          <button
+            type="button"
+            onClick={onNavigate}
+            className="ml-auto p-2 text-slate-400 hover:text-slate-700 lg:hidden"
+            aria-label="Close navigation"
+          >
+            <i className="fas fa-times" />
+          </button>
         </div>
       </div>
 
-      <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+      <nav
+        aria-label="Primary"
+        className="flex-1 overflow-y-auto py-4 px-3 space-y-1"
+      >
         {NAV_SECTIONS.map((section) => (
           <div key={section.label}>
             <p className="px-3 text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2 mt-4 first:mt-0">
@@ -65,6 +78,7 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
                   key={item.key}
                   href={item.href}
                   onClick={onNavigate}
+                  aria-current={active ? "page" : undefined}
                   className={cn(
                     "sidebar-link flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
                     active ? "active" : "text-slate-600",
@@ -96,6 +110,7 @@ export function Sidebar({ open, onNavigate }: SidebarProps) {
             type="button"
             className="text-slate-400 hover:text-rose-600"
             title="Logout"
+            aria-label="Log out"
             onClick={handleLogout}
           >
             <i className="fas fa-sign-out-alt" />

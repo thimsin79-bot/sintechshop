@@ -76,7 +76,7 @@ export function SupplierModal({ open, supplier, onClose }: SupplierModalProps) {
               placeholder="TechDistributors Inc."
             />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Contact Person">
               <input
                 value={values.contact}
@@ -100,7 +100,7 @@ export function SupplierModal({ open, supplier, onClose }: SupplierModalProps) {
               className={inputClass}
             />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Phone" error={errors.phone}>
               <input
                 value={values.phone}

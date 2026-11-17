@@ -39,11 +39,11 @@ export function PurchaseViewModal({
             </span>
           </div>
         </div>
-        <div className="flex justify-end gap-3 pt-5">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-5">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
           >
             Close
           </button>
@@ -51,12 +51,12 @@ export function PurchaseViewModal({
             <button
               type="button"
               onClick={onReceive}
-              className="px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg"
+              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg"
             >
               Mark Received
             </button>
           ) : (
-            <span className="px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed">
+            <span className="w-full sm:w-auto text-center px-4 py-2 text-sm font-medium text-slate-400 bg-slate-100 rounded-lg cursor-not-allowed">
               Received
             </span>
           )}
@@ -76,9 +76,13 @@ function Row({
   strong?: boolean;
 }) {
   return (
-    <div className="flex justify-between border-b border-slate-100 pb-2">
-      <span className="text-slate-500">{label}</span>
-      <span className={strong ? "font-semibold" : ""}>{value}</span>
+    <div className="flex justify-between gap-4 border-b border-slate-100 pb-2">
+      <span className="text-slate-500 shrink-0">{label}</span>
+      <span
+        className={`text-right min-w-0 truncate ${strong ? "font-semibold" : ""}`}
+      >
+        {value}
+      </span>
     </div>
   );
 }

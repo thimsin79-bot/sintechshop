@@ -82,7 +82,7 @@ export function ProductModal({ open, product, onClose }: ProductModalProps) {
           onClose={onClose}
         />
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="SKU" required error={errors.sku}>
               <input
                 value={values.sku}
@@ -109,7 +109,7 @@ export function ProductModal({ open, product, onClose }: ProductModalProps) {
               </select>
             </FormField>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Product Name" required error={errors.name}>
               <input
                 value={values.name}
@@ -127,7 +127,7 @@ export function ProductModal({ open, product, onClose }: ProductModalProps) {
               />
             </FormField>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <FormField label="Cost" error={errors.cost}>
               <input
                 type="number"
@@ -164,7 +164,7 @@ export function ProductModal({ open, product, onClose }: ProductModalProps) {
               />
             </FormField>
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField
               label={product ? "Stock" : "Initial Stock"}
               error={errors.stock}

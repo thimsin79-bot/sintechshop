@@ -22,18 +22,18 @@ export function FormActions({
   variant = "primary",
 }: FormActionsProps) {
   return (
-    <div className="flex justify-end gap-3 pt-2">
+    <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-2">
       <button
         type="button"
         onClick={onCancel}
-        className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+        className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
       >
         {cancelLabel}
       </button>
       <button
         type="submit"
         className={cn(
-          "px-4 py-2 text-sm font-medium text-white rounded-lg",
+          "w-full sm:w-auto px-4 py-2 text-sm font-medium text-white rounded-lg",
           variantClass[variant],
         )}
       >

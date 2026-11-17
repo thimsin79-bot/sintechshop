@@ -72,7 +72,7 @@ export function CustomerModal({ open, customer, onClose }: CustomerModalProps) {
               placeholder="Full name or company"
             />
           </FormField>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Email" error={errors.email}>
               <input
                 type="email"

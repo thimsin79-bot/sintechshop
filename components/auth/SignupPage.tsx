@@ -54,7 +54,7 @@ export function SignupPage() {
 
   if (!ready || user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-transparent">
+      <div className="flex min-h-dvh items-center justify-center bg-transparent">
         <i
           className="fas fa-circle-notch fa-spin text-2xl text-brand-500"
           aria-label="Loading"
@@ -64,8 +64,8 @@ export function SignupPage() {
   }
 
   return (
-    <div className="min-h-screen bg-transparent">
-      <main className="flex min-h-screen items-center justify-center px-6 py-12">
+    <div className="min-h-dvh bg-transparent">
+      <main className="flex min-h-dvh items-center justify-center px-6 py-12">
         <div className="w-full max-w-md">
           <div className="fade-in text-center">
             {profile.logo ? (

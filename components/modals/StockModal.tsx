@@ -133,7 +133,7 @@ export function StockModal({
           onClose={onClose}
         />
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Product" required error={errors.productId}>
               <select
                 value={values.productId}
@@ -171,7 +171,7 @@ export function StockModal({
               </FormField>
             ) : null}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <FormField label="Quantity" required error={errors.qty}>
               <input
                 type="number"

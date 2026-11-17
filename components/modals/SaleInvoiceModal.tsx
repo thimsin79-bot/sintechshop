@@ -26,7 +26,7 @@ export function SaleInvoiceModal({
 
   return (
     <Modal open={open} onClose={onClose} printable className="max-w-2xl">
-      <div className="p-8">
+      <div className="p-5 sm:p-8">
         <div className="flex items-start justify-between gap-4 mb-6">
           <div className="flex items-start gap-3 min-w-0">
             {profile.logo ? (
@@ -69,12 +69,12 @@ export function SaleInvoiceModal({
             <p className="font-bold">{sale.id}</p>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4 text-sm border-t border-b border-slate-100 py-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm border-t border-b border-slate-100 py-4 mb-4">
           <div>
             <p className="text-xs text-slate-500">Billed To</p>
             <p className="font-medium">{sale.customer}</p>
           </div>
-          <div className="text-right">
+          <div className="sm:text-right">
             <p className="text-xs text-slate-500">Payment</p>
             <p className="font-medium capitalize">{sale.payment}</p>
           </div>
@@ -108,18 +108,18 @@ export function SaleInvoiceModal({
         <p className="text-xs text-slate-400 mt-8 text-center">
           Thank you for shopping with {profile.name}.
         </p>
-        <div className="no-print flex justify-end gap-3 pt-5">
+        <div className="no-print flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-5">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
           >
             Close
           </button>
           <button
             type="button"
             onClick={() => window.print()}
-            className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg"
           >
             <i className="fas fa-print mr-1" /> Print
           </button>

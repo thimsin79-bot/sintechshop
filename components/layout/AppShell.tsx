@@ -24,11 +24,20 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!user) router.replace("/login");
   }, [ready, isAuthPage, user, router]);
 
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setSidebarOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [sidebarOpen]);
+
   if (isAuthPage) return <>{children}</>;
 
   if (!ready || !user || !dataReady) {
     return (
-      <div className="flex h-screen items-center justify-center bg-transparent">
+      <div className="flex h-dvh items-center justify-center bg-transparent">
         <div className="flex flex-col items-center gap-3 text-slate-400">
           <i className="fas fa-circle-notch fa-spin text-2xl text-brand-500" />
           <p className="text-sm">Loading workspace...</p>
@@ -38,11 +47,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden">
+    <div className="flex h-dvh overflow-hidden">
+      {sidebarOpen ? (
+        <button
+          type="button"
+          aria-label="Close navigation"
+          className="fixed inset-0 z-30 bg-slate-900/50 backdrop-blur-sm lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      ) : null}
       <Sidebar open={sidebarOpen} onNavigate={() => setSidebarOpen(false)} />
       <div className="flex-1 flex flex-col overflow-hidden min-w-0">
-        <Header onMenuClick={() => setSidebarOpen((value) => !value)} />
-        <main id="content" className="flex-1 overflow-y-auto p-6">
+        <Header
+          menuOpen={sidebarOpen}
+          onMenuClick={() => setSidebarOpen((value) => !value)}
+        />
+        <main id="content" className="flex-1 overflow-y-auto p-4 sm:p-6">
           {children}
         </main>
       </div>

@@ -45,8 +45,10 @@ export function Modal({
     >
       <div
         id={printable ? "print-area" : undefined}
+        role="dialog"
+        aria-modal="true"
         className={cn(
-          "bg-white rounded-2xl shadow-2xl w-full mx-4 max-h-[90vh] overflow-y-auto",
+          "bg-white rounded-2xl shadow-2xl w-full mx-3 sm:mx-4 max-h-[90dvh] overflow-y-auto",
           className,
         )}
       >

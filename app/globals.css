@@ -19,6 +19,7 @@ body {
 
 .app-background {
   min-height: 100vh;
+  min-height: 100dvh;
   background-color: #f8fafc;
   background-image:
     radial-gradient(ellipse 80% 60% at 100% 0%, rgba(59, 130, 246, 0.1), transparent 60%),

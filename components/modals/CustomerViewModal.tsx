@@ -34,7 +34,7 @@ export function CustomerViewModal({
           }
           onClose={onClose}
         />
-        <div className="grid grid-cols-2 gap-3 mb-5 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-5 text-sm">
           <Info label="Email" value={customer.email || "—"} />
           <Info label="Phone" value={customer.phone || "—"} />
           <Info label="Orders" value={String(customer.orders)} />
@@ -64,18 +64,18 @@ export function CustomerViewModal({
             </p>
           ) : null}
         </div>
-        <div className="flex justify-end gap-3 pt-5">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 pt-5">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
           >
             Close
           </button>
           <button
             type="button"
             onClick={onEdit}
-            className="px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg"
+            className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 rounded-lg"
           >
             Edit Customer
           </button>

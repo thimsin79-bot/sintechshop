@@ -52,21 +52,21 @@ export function ProductsPage() {
   return (
     <div className="fade-in space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="relative">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 w-full sm:w-auto">
+          <div className="relative w-full sm:w-auto">
             <i className="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm" />
             <input
               type="text"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search products..."
-              className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 w-64 bg-white"
+              className="pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 w-full sm:w-64 bg-white"
             />
           </div>
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
-            className="text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white"
+            className="w-full sm:w-auto text-sm border border-slate-200 rounded-lg px-3 py-2 bg-white"
           >
             <option value="">All Categories</option>
             {data.categories.map((item) => (
