@@ -518,6 +518,86 @@ async function createSale(draft: SaleDraft): Promise<void> {
   });
 }
 
+async function updateSale(id: string, draft: SaleDraft): Promise<void> {
+  if (draft.qty <= 0) throw new StoreError("Quantity must be greater than zero");
+
+  await prisma.$transaction(async (tx) => {
+    const sale = await tx.sale.findUnique({ where: { id } });
+    if (!sale) throw new StoreError("Sale not found");
+    if (sale.status !== "completed") {
+      throw new StoreError("Only completed sales can be edited");
+    }
+
+    const customer = await tx.customer.findUnique({
+      where: { id: draft.customerId },
+    });
+    const product = await tx.product.findUnique({
+      where: { id: draft.productId },
+    });
+
+    if (!customer || !product) {
+      throw new StoreError("Select a customer and product");
+    }
+
+    await reverseSaleEffects(tx, sale);
+
+    const restoredProduct = await tx.product.findUnique({
+      where: { id: product.id },
+    });
+    if (!restoredProduct || restoredProduct.stock < draft.qty) {
+      const available = restoredProduct?.stock ?? 0;
+      throw new StoreError(
+        `Only ${available} units of ${product.name} in stock`,
+      );
+    }
+
+    const total = num(product.price) * draft.qty;
+    const stock = restoredProduct.stock - draft.qty;
+    await tx.product.update({
+      where: { id: product.id },
+      data: { stock, status: productStatus(stock, restoredProduct.minStock) },
+    });
+
+    const restoredCustomer = await tx.customer.findUnique({
+      where: { id: customer.id },
+    });
+    if (!restoredCustomer) {
+      throw new StoreError("Select a customer and product");
+    }
+    await tx.customer.update({
+      where: { id: customer.id },
+      data: {
+        orders: restoredCustomer.orders + 1,
+        spent: num(restoredCustomer.spent) + total,
+      },
+    });
+
+    await tx.sale.update({
+      where: { id },
+      data: {
+        customerId: customer.id,
+        customerName: customer.name,
+        productId: product.id,
+        items: draft.qty,
+        total,
+        payment: draft.payment,
+      },
+    });
+
+    await tx.stockMovement.deleteMany({ where: { ref: id } });
+    await tx.stockMovement.create({
+      data: {
+        type: "out",
+        productId: product.id,
+        productName: product.name,
+        qty: draft.qty,
+        ref: id,
+        user: "Admin",
+      },
+    });
+  });
+}
+
 async function refundSale(id: string): Promise<void> {
   await prisma.$transaction(async (tx) => {
     const sale = await tx.sale.findUnique({ where: { id } });
@@ -834,6 +914,9 @@ export async function handleStoreAction(
       return;
     case "createSale":
       await createSale(payload.draft as SaleDraft);
+      return;
+    case "updateSale":
+      await updateSale(payload.id as string, payload.draft as SaleDraft);
       return;
     case "refundSale":
       await refundSale(payload.id as string);

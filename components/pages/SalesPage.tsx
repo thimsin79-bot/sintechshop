@@ -16,6 +16,7 @@ export function SalesPage() {
   const { data, refundSale, deleteSale } = useData();
   const { showToast } = useToast();
   const [creating, setCreating] = useState(false);
+  const [editing, setEditing] = useState<Sale | null>(null);
   const [viewing, setViewing] = useState<Sale | null>(null);
   const [deleting, setDeleting] = useState<Sale | null>(null);
   const pagination = usePagination(data.sales, 10);
@@ -118,6 +119,16 @@ export function SalesPage() {
                     >
                       <i className="fas fa-print" />
                     </button>
+                    {sale.status === "completed" ? (
+                      <button
+                        type="button"
+                        onClick={() => setEditing(sale)}
+                        className="text-slate-400 hover:text-brand-600 p-1.5"
+                        title="Edit"
+                      >
+                        <i className="fas fa-pen-to-square" />
+                      </button>
+                    ) : null}
                     {sale.status !== "refunded" ? (
                       <button
                         type="button"
@@ -164,6 +175,11 @@ export function SalesPage() {
       </div>
 
       <SaleModal open={creating} onClose={() => setCreating(false)} />
+      <SaleModal
+        open={Boolean(editing)}
+        sale={editing}
+        onClose={() => setEditing(null)}
+      />
       <SaleInvoiceModal
         open={Boolean(viewing)}
         sale={viewing}

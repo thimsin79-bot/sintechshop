@@ -53,6 +53,7 @@ interface StoreContextValue {
   updatePurchase: (id: string, draft: PurchaseDraft) => void;
   receivePurchase: (id: string) => void;
   createSale: (draft: SaleDraft) => string | null;
+  updateSale: (id: string, draft: SaleDraft) => string | null;
   refundSale: (id: string) => void;
   deleteSale: (id: string) => void;
   saveCustomer: (draft: CustomerDraft, id?: number | null) => void;
@@ -231,6 +232,36 @@ export function DataProvider({ children }: { children: ReactNode }) {
     [data.customers, data.products, dispatch],
   );
 
+  const updateSale = useCallback(
+    (id: string, draft: SaleDraft): string | null => {
+      const sale = data.sales.find((item) => item.id === id);
+      if (!sale) return "Sale not found";
+      if (sale.status !== "completed") {
+        return "Only completed sales can be edited";
+      }
+
+      const customer = data.customers.find(
+        (item) => item.id === draft.customerId,
+      );
+      const product = data.products.find(
+        (item) => item.id === draft.productId,
+      );
+
+      if (!customer || !product) return "Select a customer and product";
+      if (draft.qty <= 0) return "Quantity must be greater than zero";
+
+      const restored = sale.productId === product.id ? sale.items : 0;
+      const available = product.stock + restored;
+      if (available < draft.qty) {
+        return `Only ${available} units of ${product.name} in stock`;
+      }
+
+      dispatch("updateSale", { id, draft });
+      return null;
+    },
+    [data.customers, data.products, data.sales, dispatch],
+  );
+
   const refundSale = useCallback(
     (id: string) => {
       dispatch("refundSale", { id });
@@ -355,6 +386,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         updatePurchase,
         receivePurchase,
         createSale,
+        updateSale,
         refundSale,
         deleteSale,
         saveCustomer,

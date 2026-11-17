@@ -317,7 +317,7 @@ The shared `useData()` hook exposes the same API as before, but each action disp
 
 - Product, category, supplier, customer, and user create/update actions
 - Purchase order creation and receiving
-- Sale creation, refunds, and deletion
+- Sale creation, editing, refunds, and deletion (editing restores the original stock and customer totals before applying the new values)
 - Warranty registration and claims
 - Stock In / Out recording, editing, and deletion
 - Record deletion

@@ -12,16 +12,24 @@ import { useForm } from "@/lib/useForm";
 import { validateSale } from "@/lib/validation";
 import { inputClass } from "@/lib/styles";
 import { formatCurrency, nextCode } from "@/lib/utils";
-import type { PaymentMethod, SaleDraft } from "@/lib/types";
+import type { PaymentMethod, Sale, SaleDraft } from "@/lib/types";
 
 interface SaleModalProps {
   open: boolean;
   onClose: () => void;
+  sale?: Sale | null;
 }
 
-export function SaleModal({ open, onClose }: SaleModalProps) {
-  const { data, createSale } = useData();
+export function SaleModal({ open, onClose, sale }: SaleModalProps) {
+  const { data, createSale, updateSale } = useData();
   const { showToast } = useToast();
+  const availableProducts = sale
+    ? data.products.map((item) =>
+        item.id === sale.productId
+          ? { ...item, stock: item.stock + sale.items }
+          : item,
+      )
+    : data.products;
   const { values, errors, formError, setValue, setFormError, reset, submit } =
     useForm<SaleDraft>(
       {
@@ -30,29 +38,52 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
         qty: 1,
         payment: "card",
       },
-      (draft) => validateSale(draft, data.products, data.customers),
+      (draft) => validateSale(draft, availableProducts, data.customers),
     );
 
   useEffect(() => {
     if (!open) return;
+    if (sale) {
+      reset({
+        customerId:
+          sale.customerId ??
+          data.customers.find((item) => item.name === sale.customer)?.id ??
+          data.customers[0]?.id ??
+          0,
+        productId:
+          sale.productId ??
+          data.products.find(
+            (item) => item.name === (sale.productName || sale.product),
+          )?.id ??
+          data.products[0]?.id ??
+          0,
+        qty: sale.items,
+        payment: sale.payment,
+      });
+      return;
+    }
     reset({
       customerId: data.customers[0]?.id ?? 0,
       productId: data.products[0]?.id ?? 0,
       qty: 1,
       payment: "card",
     });
-  }, [open, data.customers, data.products, reset]);
+  }, [open, sale, data.customers, data.products, reset]);
 
   const product = data.products.find((item) => item.id === values.productId);
 
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     submit(event, (draft) => {
-      const error = createSale(draft);
+      const error = sale ? updateSale(sale.id, draft) : createSale(draft);
       if (error) {
         setFormError(error);
         return;
       }
-      showToast(`Sale ${nextCode("INV-", data.sales)} completed`);
+      showToast(
+        sale
+          ? `Sale ${sale.id} updated`
+          : `Sale ${nextCode("INV-", data.sales)} completed`,
+      );
       onClose();
     });
   }
@@ -61,8 +92,8 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
     <Modal open={open} onClose={onClose}>
       <div className="p-6">
         <ModalHeader
-          title="New Sale"
-          subtitle={nextCode("INV-", data.sales)}
+          title={sale ? "Edit Sale" : "New Sale"}
+          subtitle={sale ? sale.id : nextCode("INV-", data.sales)}
           onClose={onClose}
         />
         <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -93,8 +124,8 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
               }
               className={inputClass}
             >
-              {data.products.length ? (
-                data.products.map((item) => (
+              {availableProducts.length ? (
+                availableProducts.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.name} — {formatCurrency(item.price)} ({item.stock} in
                     stock)
@@ -140,7 +171,10 @@ export function SaleModal({ open, onClose }: SaleModalProps) {
             </p>
           ) : null}
           <FormError message={formError} />
-          <FormActions onCancel={onClose} submitLabel="Complete Sale" />
+          <FormActions
+            onCancel={onClose}
+            submitLabel={sale ? "Save Changes" : "Complete Sale"}
+          />
         </form>
       </div>
     </Modal>
